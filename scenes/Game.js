@@ -27,7 +27,9 @@ class Game extends Phaser.Scene {
     );
     //this.backgroundLayer.setCollisionByProperty({collides: true});
 
+    this.detailsLayer = this.map.createStaticLayer("details", backgroundTile, 0, 0);
     this.housesLayer = this.map.createStaticLayer("houses", backgroundTile, 0, 0);
+    //this.housesLayer.enableBody = true;
     //this.housesLayer.setCollisionByProperty({ collides: true });
     //this.housesLayer.setCollisionByExclusion([-1]);
 
@@ -42,10 +44,6 @@ class Game extends Phaser.Scene {
     this.player.body.bounce.setTo(0.9, 0.9);
     this.player.setCollideWorldBounds(true);
     this.player.onWorldBounds = true;
-
-    //this.player.setSize(16, 32);
-    console.log('getBounds => ', this.player.getBounds());
-
     ["walkdown", "walkup", "walkleft", "walkright"].forEach(animName => {
       const frameNames = this.anims.generateFrameNames("worldAnim", {
         prefix: animName + "-",
@@ -61,10 +59,30 @@ class Game extends Phaser.Scene {
     });
 
 
+    // coins
+
+    this.anims.create({
+      key: "spr-coin",
+      frames: this.anims.generateFrameNumbers('coinanim', {frames: [132, 133, 134, 135] }),
+      frameRate: 6,
+      repeat: -1
+    });
+
+    this.coins = this.physics.add.group();
+    this.coins.enableBody = true;
+    var result = this.findObjectsByType("coin", this.map);
+    result.forEach(function(element) {
+      const tmp = this.physics.add.sprite(element.x, element.y, "coinanim", 132);
+      tmp.anims.play("spr-coin", true);
+      this.coins.add(tmp);
+    }, this);
+
+
+
 
     // collisions
 
-    //this.physics.add.collider(this.player, this.housesLayer);
+    this.physics.add.collider(this.player, this.housesLayer);
 
 
 
@@ -123,6 +141,43 @@ class Game extends Phaser.Scene {
     this.cameraDolly.x = Math.floor(this.player.x);
     this.cameraDolly.y = Math.floor(this.player.y);
   }
+
+
+
+
+
+
+
+
+
+
+
+
+  findObjectsByType(type, map) {
+    var result = [];
+
+    console.log('map = ', map);
+
+    if (map && map.objects && map.objects[0].objects) {
+      map.objects[0].objects.forEach(element => {
+        if (element.type === type) {
+          element.y -= map.tileHeight;
+          result.push(element);
+        }
+      });
+      return result;
+    }
+    return result;
+  }
+
+
+
+
+
+
+
+
+
 
 
   render() {
