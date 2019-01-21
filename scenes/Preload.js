@@ -46,6 +46,34 @@ class Preload extends Phaser.Scene {
   }
 
   create() {
+
+    // create animations
+
+    this.anims.create({
+      key: "spr-coin",
+      frames: this.anims.generateFrameNumbers('coinanim', {frames: [132, 133, 134, 135] }),
+      frameRate: 6,
+      repeat: -1
+    });
+
+
+    ["walkdown", "walkup", "walkleft", "walkright"].forEach(animName => {
+      const frameNames = this.anims.generateFrameNames("worldAnim", {
+        prefix: animName + "-",
+        start: 1,
+        end: 4
+      });
+      this.anims.create({
+        key: "spr-hero-" + animName,
+        frames: frameNames,
+        frameRate: 6,
+        repeat: -1
+      });
+    });
+
+
+    // next state
+
     this.scene.start("Menu");
   }
 

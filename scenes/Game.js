@@ -32,10 +32,22 @@ class Game extends Phaser.Scene {
     //this.housesLayer.enableBody = true;
     //this.housesLayer.setCollisionByProperty({ collides: true });
     //this.housesLayer.setCollisionByExclusion([-1]);
+    //this.housesLayer.setCollisionBetween(1, 200);
+    //this.map.setCollisionBetween(1, 999, true, 'houses');
 
-
-
-
+    /*var overlapObjects = this.map.getObjectLayer('houses')['objects']; //my Object layer was called Overlap
+    let overlapObjectsGroup = this.game.physics.add.staticGroup({ });
+    let i = 0;
+    overlapObjects.forEach(object => {
+      let obj = overlapObjectsGroup.create(object.x, object.y, 'grass');
+      obj.setScale(object.width/16, object.height/16); //my tile size was 32
+      obj.setOrigin(0); //the positioning was off, and B3L7 mentioned the default was 0.5
+      obj.body.width = object.width; //body of the physics body
+      obj.body.height = object.height;
+    });
+    overlapObjectsGroup.refresh(); //physics body needs to refresh
+    console.log(overlapObjectsGroup);
+    //this.game.physics.add.overlap(this.player, overlapObjectsGroup, this.test, null, this);*/
 
     // player @todo move to own class
 
@@ -44,30 +56,9 @@ class Game extends Phaser.Scene {
     this.player.body.bounce.setTo(0.9, 0.9);
     this.player.setCollideWorldBounds(true);
     this.player.onWorldBounds = true;
-    ["walkdown", "walkup", "walkleft", "walkright"].forEach(animName => {
-      const frameNames = this.anims.generateFrameNames("worldAnim", {
-        prefix: animName + "-",
-        start: 1,
-        end: 4
-      });
-      this.anims.create({
-        key: "spr-hero-" + animName,
-        frames: frameNames,
-        frameRate: 6,
-        repeat: -1
-      });
-    });
 
 
     // coins
-
-    this.anims.create({
-      key: "spr-coin",
-      frames: this.anims.generateFrameNumbers('coinanim', {frames: [132, 133, 134, 135] }),
-      frameRate: 6,
-      repeat: -1
-    });
-
     this.coins = this.physics.add.group();
     this.coins.enableBody = true;
     var result = this.findObjectsByType("coin", this.map);
@@ -82,9 +73,19 @@ class Game extends Phaser.Scene {
 
     // collisions
 
-    this.physics.add.collider(this.player, this.housesLayer);
+    this.housesLayer.setDepth(1);
+    // 127, 128, 129, 130, 131
+    //var testHouses = this.map.createFromObjects('houses', 4, { key: 'coinanim' });
+    //this.housesLayer.setCollision(0, false);
+    //this.housesLayer.setCollision(169, true);
+    //this.physics.add.collider(this.player, this.housesLayer);
+    //this.physics.add.overlap(this.player, this.housesLayer, this.overHouse, null, this);
+    //this.physics.add.collider(this.player, this.coins);
+    this.physics.add.overlap(this.player, this.coins, this.collectCoin, null, this);
 
-
+    //this.map.setCollisionBetween(1, 200);
+    //this.housesLayer.resizeWorld();
+    //this.housesLayer.debug = true;
 
 
 
@@ -97,6 +98,10 @@ class Game extends Phaser.Scene {
     this.cameras.main.startFollow(this.cameraDolly);
 
     this.physics.world.setBounds(0, 0, this.map.widthInPixels, this.map.heightInPixels);
+
+    this.playerScore = 0;
+    this.scoreText = this.add.text(16, 16, 'Score: 0', { fontSize: '16px', fill: '#fff' });
+    this.scoreText.setScrollFactor(0);
 
 
     // debug
@@ -144,10 +149,23 @@ class Game extends Phaser.Scene {
 
 
 
+  overHouse() {
+    console.log('over a house !');
+  }
 
 
 
 
+
+
+  collectCoin(player, coin) {
+    coin.disableBody(true, true);
+    this.playerScore++;
+    this.scoreText.setText('Score: ' + this.playerScore);
+    if (this.coins.countActive(true) === 0) {
+      // toutes les pièces ont été trouvées : première quête terminée !!
+    }
+  }
 
 
 
