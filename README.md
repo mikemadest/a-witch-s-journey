@@ -5,17 +5,9 @@ Your little brother have disapeared !
 Destroy the monster attaking the village, get him back !
 
 ----------------------
+## Log
 
-version 0.01
-- init
-- title screen
-- loading tilemap
-- player display
-- coins and first animations
-
-----------------------
-
-version 0.02
+### Version 0.02
 New entities and animations :
 - now the coin animation is also in the atlas
 - first change on preload to introduce assets.json loading file
@@ -26,34 +18,43 @@ New entities and animations :
 
 ----------------------
 
-COMING NEXT (subject to change)) :
+### Version 0.01
+- init
+- title screen
+- loading tilemap
+- player display
+- coins and first animations
 
-version 0.03
+----------------------
+
+## COMING NEXT (subject to change)) :
+
+### Version 0.03
 - player life
 - enemy collisions and taking dammage
 - giving the coins to the old man
 
 ----------------------
 
-version 0.04
+### Version 0.04
 - getting the magic staff
 - fireball spell !
 - hitting enemy and destroying them
 
 ----------------------
 
-version 0.05
+### Version 0.05
 - collisions with houses and other stuffs !!
 - old man dialogue
 
 ----------------------
 
-version 0.06
+### Version 0.06
 - moving monster in the forest
 - pirate attacks ?
 
 ----------------------
-At some point :
+## Future features :
 
 - Monster basic AI, attack when the player is close, move arround
 - monster spawn
