@@ -17,10 +17,6 @@ class Game extends Phaser.Scene {
     this.map = this.add.tilemap("level1");
     const backgroundTile = this.map.addTilesetImage("overworld", "gameTile");
     const objectsTile = this.map.addTilesetImage("objects", "objectsTile");
-    const characterTile = this.map.addTilesetImage(
-      "character",
-      "charactersTile"
-    );
     this.backgroundLayer = this.map.createStaticLayer(
       "background",
       backgroundTile,
@@ -35,12 +31,19 @@ class Game extends Phaser.Scene {
       0,
       0
     );
+    this.details2Layer = this.map.createStaticLayer(
+      "details2",
+      backgroundTile,
+      0,
+      0
+    );
     this.housesLayer = this.map.createStaticLayer(
       "houses",
       backgroundTile,
       0,
       0
     );
+    //this.housesLayer.setDepth(1);
     //this.housesLayer.enableBody = true;
     //this.housesLayer.setCollisionByProperty({ collides: true });
     //this.housesLayer.setCollisionByExclusion([-1]);
@@ -61,32 +64,139 @@ class Game extends Phaser.Scene {
     console.log(overlapObjectsGroup);
     //this.game.physics.add.overlap(this.player, overlapObjectsGroup, this.test, null, this);*/
 
-    // player @todo move to own class
+    // player
+    this.playerEntity = new Entity(
+      this,
+      this.map,
+      "playerSpawn", // playerSpawn
+      "worldAnim",
+      "hero-walkdown-1"
+    );
+    this.player = this.playerEntity.create()[0];
 
-    this.player = this.physics.add.sprite(145, 587, "worldAnim", "walkdown-1");
-    this.player.enableBody();
-    this.player.body.bounce.setTo(0.9, 0.9);
-    this.player.setCollideWorldBounds(true);
-    this.player.onWorldBounds = true;
+    // old man
+    this.oldmanEntity = new Entity(
+      this,
+      this.map,
+      "oldmanSpawn",
+      "worldAnim",
+      "oldman-walkdown-1" /*,
+      "spr-oldman-walkdown"*/
+    );
+    this.oldman = this.oldmanEntity.create()[0];
+    this.physics.add.collider(this.player, this.oldman);
+
+    //talkingSpawn
+
+    this.talkingEntity = new Entity(
+      this,
+      this.map,
+      "talkingSpawn",
+      "worldAnim",
+      "talking-1",
+      "spr-talking"
+    );
+    this.talking = this.talkingEntity.create()[0];
+    this.timedEvent = this.time.addEvent({
+      delay: 500,
+      callback: this.talkingEvent,
+      callbackScope: this,
+      repeat: 3
+    });
+
+    // grandma
+    this.grandmaEntity = new Entity(
+      this,
+      this.map,
+      "grandmaSpawn",
+      "worldAnim",
+      "grandma-walkdown-1" /*,
+      "spr-oldman-walkdown"*/
+    );
+    this.grandma = this.grandmaEntity.create()[0];
+    this.physics.add.collider(this.player, this.grandma);
+
+    // aryl
+    this.arylEntity = new Entity(
+      this,
+      this.map,
+      "arylSpawn",
+      "worldAnim",
+      "aryl-1",
+      "spr-aryl"
+    );
+    this.aryl = this.arylEntity.create()[0];
+    this.physics.add.collider(this.player, this.aryl);
+
+    // monster
+    this.monster1Entity = new Entity(
+      this,
+      this.map,
+      "monster1Spawn",
+      "worldAnim",
+      "log-walkdown-1"
+    );
+    this.monster1 = this.monster1Entity.create()[0];
+    this.physics.add.collider(this.player, this.monster1);
+
+    this.monster2Entity = new Entity(
+      this,
+      this.map,
+      "monster2Spawn",
+      "worldAnim",
+      "pirate-stand-1",
+      "spr-pirate-stand"
+    );
+    this.monster2 = this.monster2Entity.create()[0];
+    this.physics.add.collider(this.player, this.monster2);
+
+    // deco
+    this.fountainEntity = new Entity(
+      this,
+      this.map,
+      "fountainAnim",
+      "worldAnim",
+      "fountain-1",
+      "spr-fountain"
+    );
+    this.fountain = this.fountainEntity.create()[0];
+
+    this.waterfallEntity = new Entity(
+      this,
+      this.map,
+      "waterfallAnim",
+      "worldAnim",
+      "waterfall-1",
+      "spr-waterfall"
+    );
+    this.waterfall = this.waterfallEntity.create()[0];
+
+    this.waterfallEntity = new Entity(
+      this,
+      this.map,
+      "waterfall-bAnim",
+      "worldAnim",
+      "waterfall-b-1",
+      "spr-waterfall-b"
+    );
+    this.waterfall = this.waterfallEntity.create()[0];
+    //this.physics.add.collider(this.player, this.fountain);
 
     // coins
     this.coins = this.physics.add.group();
     this.coins.enableBody = true;
-    var result = this.findObjectsByType("coin", this.map);
-    result.forEach(function(element) {
-      const tmp = this.physics.add.sprite(
-        element.x,
-        element.y,
-        "coinanim",
-        132
-      );
-      tmp.anims.play("spr-coin", true);
-      this.coins.add(tmp);
-    }, this);
+    this.coinEntity = new Entity(
+      this,
+      this.map,
+      "coin",
+      "worldAnim",
+      "coin-1",
+      "spr-coin"
+    );
+    this.coinEntity.create().forEach(coin => this.coins.add(coin));
 
     // collisions
 
-    this.housesLayer.setDepth(1);
     // 127, 128, 129, 130, 131
     //var testHouses = this.map.createFromObjects('houses', 4, { key: 'coinanim' });
     //this.housesLayer.setCollision(0, false);
@@ -107,15 +217,12 @@ class Game extends Phaser.Scene {
     //this.housesLayer.debug = true;
 
     this.cursors = this.input.keyboard.createCursorKeys();
-
-    // Constrain the camera so that it isn't allowed to move outside the width/height of tilemap
     this.cameras.main.setBounds(
       0,
       0,
       this.map.widthInPixels,
       this.map.heightInPixels
     );
-    //camera.startFollow(this.player);
     this.cameraDolly = new Phaser.Geom.Point(this.player.x, this.player.y);
     this.cameras.main.startFollow(this.cameraDolly);
 
@@ -135,7 +242,7 @@ class Game extends Phaser.Scene {
 
     // debug
 
-    this.physics.world.createDebugGraphic();
+    /*this.physics.world.createDebugGraphic();
     const graphics = this.add
       .graphics()
       .setAlpha(0.75)
@@ -144,9 +251,16 @@ class Game extends Phaser.Scene {
       tileColor: null, // Color of non-colliding tiles
       collidingTileColor: new Phaser.Display.Color(243, 134, 48, 255), // Color of colliding tiles
       faceColor: new Phaser.Display.Color(40, 39, 37, 255) // Color of colliding face edges
-    });
+    });*/
 
     //
+  }
+
+  talkingEvent() {
+    /*this.talking.scaleX *= 0.95;
+    this.talking.scaleY *= 0.95;
+    this.talking.rotation += 0.04;*/
+    this.talking.visible = !this.talking.visible;
   }
 
   update(time, delta) {
@@ -188,27 +302,6 @@ class Game extends Phaser.Scene {
     if (this.coins.countActive(true) === 0) {
       // toutes les pièces ont été trouvées : première quête terminée !!
     }
-  }
-
-  /**
-   * findObjectsByType - helper to use object layer for element position
-   *
-   * @param  {type} type description
-   * @param  {type} map  description
-   * @return {type}      description
-   */
-  findObjectsByType(type, map) {
-    var result = [];
-    if (!map || !map.objects || !map.objects[0].objects) {
-      return result;
-    }
-    map.objects[0].objects.forEach(element => {
-      if (element.type === type) {
-        element.y -= map.tileHeight;
-        result.push(element);
-      }
-    });
-    return result;
   }
 
   render() {

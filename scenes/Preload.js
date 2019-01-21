@@ -5,6 +5,82 @@
 class Preload extends Phaser.Scene {
   constructor() {
     super({ key: "Preload", active: false });
+
+    this.witch_images = [
+      ["gameTile", "tilemap/overworld.png"],
+      ["objectsTile", "tilemap/objects.png"],
+      ["charactersTile", "tilemap/character.png"]
+    ];
+
+    this.witch_anims = [
+      ["coin", { start: 1, end: 4 }],
+      ["aryl", { start: 1, end: 4 }],
+      ["talking", { start: 1, end: 4 }],
+      ["hero-walkdown", { start: 1, end: 4 }],
+      ["hero-walkup", { start: 1, end: 4 }],
+      ["hero-walkleft", { start: 1, end: 4 }],
+      ["hero-walkright", { start: 1, end: 4 }],
+      ["fountain", { start: 1, end: 3 }],
+      ["waterfall", { start: 1, end: 3 }],
+      ["waterfall-b", { start: 1, end: 3 }],
+      ["log-walkdown", { frames: [1, 2, 1, 3] }],
+      ["log-walkup", { frames: [1, 2, 1, 3] }],
+      ["log-walkleft", { frames: [1, 2, 1, 3] }],
+      ["log-walkright", { frames: [1, 2, 1, 3] }],
+      ["oldman-walkdown", { frames: [1, 2, 1, 3] }],
+      ["oldman-walkup", { frames: [1, 2, 1, 3] }],
+      ["oldman-walkleft", { frames: [1, 2, 1, 3] }],
+      ["oldman-walkright", { frames: [1, 2, 1, 3] }],
+      ["grandma-walkdown", { frames: [1, 2, 1, 3] }],
+      ["grandma-walkup", { frames: [1, 2, 1, 3] }],
+      ["grandma-walkleft", { frames: [1, 2, 1, 3] }],
+      ["grandma-walkright", { frames: [1, 2, 1, 3] }],
+      ["pirate-walkleft", { frames: [1, 2, 1, 3] }],
+      ["pirate-walkright", { frames: [1, 2, 1, 3] }],
+      [
+        "pirate-stand",
+        {
+          frames: [
+            1,
+            2,
+            3,
+            4,
+            4,
+            4,
+            4,
+            3,
+            2,
+            3,
+            4,
+            4,
+            3,
+            3,
+            2,
+            1,
+            1,
+            1,
+            2,
+            2,
+            1,
+            1,
+            2,
+            3,
+            2,
+            1,
+            1,
+            2,
+            2,
+            1,
+            1,
+            2,
+            3,
+            2,
+            1
+          ],
+          speed: 4
+        }
+      ]
+    ];
   }
 
   init() {
@@ -19,22 +95,7 @@ class Preload extends Phaser.Scene {
 
     // spritesheets
     this.load.setPath(this.URL + "assets/");
-    this.load.spritesheet(
-      "coinanim", // key
-      "tilemap/objects.png", // file name
-      {
-        frameWidth: 16,
-        frameHeight: 16,
-        startFrame: 132,
-        endFrame: 135,
-        margin: 0,
-        spacing: 0
-      }
-    );
-
-    this.load.image('gameTile', "tilemap/overworld.png");
-    this.load.image('objectsTile', "tilemap/objects.png");
-    this.load.image('charactersTile', "tilemap/character.png");
+    this.witch_images.forEach(item => this.load.image(item[0], item[1]));
     this.load.tilemapTiledJSON("level1", "tilemap/level1.json");
 
     this.load.atlas(
@@ -46,34 +107,12 @@ class Preload extends Phaser.Scene {
   }
 
   create() {
-
     // create animations
-
-    this.anims.create({
-      key: "spr-coin",
-      frames: this.anims.generateFrameNumbers('coinanim', {frames: [132, 133, 134, 135] }),
-      frameRate: 6,
-      repeat: -1
-    });
-
-
-    ["walkdown", "walkup", "walkleft", "walkright"].forEach(animName => {
-      const frameNames = this.anims.generateFrameNames("worldAnim", {
-        prefix: animName + "-",
-        start: 1,
-        end: 4
-      });
-      this.anims.create({
-        key: "spr-hero-" + animName,
-        frames: frameNames,
-        frameRate: 6,
-        repeat: -1
-      });
-    });
-
+    this.witch_anims.forEach(item =>
+      this.createAnims(item[0], "worldAnim", item[1])
+    );
 
     // next state
-
     this.scene.start("Menu");
   }
 
@@ -83,15 +122,28 @@ class Preload extends Phaser.Scene {
     this.bg.fillRect(0, 0, this.CONFIG.width, this.CONFIG.height);
   }
 
+  createAnims(animName, cachename, framesCfg) {
+    if (!animName) return;
+    const config = { ...framesCfg, prefix: animName + "-" };
+    const frameNames = this.anims.generateFrameNames(cachename, config);
+    const speed = framesCfg.speed ? framesCfg.speed : 5;
+    this.anims.create({
+      key: "spr-" + animName,
+      frames: frameNames,
+      frameRate: speed,
+      repeat: -1
+    });
+  }
+
   createLoadingBar() {
     // Title
     this.title = new Text(
-      this, // ctx argument, reference to the Preload scene
-      this.CONFIG.centerX, // x-coordinate
-      75, // y-coordinate
-      "Loading Game", // string to write
-      "title", // styling key
-      0.5 // origin
+      this,
+      this.CONFIG.centerX,
+      75,
+      "Loading Game",
+      24,
+      0.5
     );
 
     // Progress text
@@ -100,7 +152,7 @@ class Preload extends Phaser.Scene {
       this.CONFIG.centerX,
       this.CONFIG.centerY - 5,
       "Loading...",
-      "preload",
+      16,
       { x: 0.5, y: 1 }
     );
 

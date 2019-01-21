@@ -15,12 +15,12 @@ class Menu extends Phaser.Scene {
     this.createBackground();
 
     this.title = new Text(
-      this, // ctx argument, reference to the Preload scene
-      this.CONFIG.centerX, // x-coordinate
-      50, // y-coordinate
-      "A \r\nWitch\nJourney", // string to write
-      "title", // styling key
-      0.5 // origin
+      this,
+      this.CONFIG.centerX,
+      50,
+      "A \r\nWitch\nJourney",
+      24,
+      0.5
     );
 
     this.txt_progress = new Text(
@@ -28,7 +28,7 @@ class Menu extends Phaser.Scene {
       this.CONFIG.centerX,
       this.CONFIG.centerY + 100,
       "Click to start",
-      "preload",
+      16,
       { x: 0.5, y: 1 }
     );
 

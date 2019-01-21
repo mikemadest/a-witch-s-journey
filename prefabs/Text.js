@@ -2,35 +2,21 @@
  *
  **/
 class Text {
-  constructor(ctx, x, y, string, style, origin) {
+  constructor(ctx, x, y, string, size, origin) {
     this.ctx = ctx;
     this.x = x;
     this.y = y;
     this.text = string;
-    this.style = this.initStyle(style);
+    this.style = {
+      fontFamily: "ClickPixel",
+      fontSize: size,
+      color: "0xFFFFFF",
+      align: "center"
+    };
     this.origin = this.initOrigin(origin);
     this.obj = this.createText();
   }
 
-  initStyle(key) {
-    const style = {
-      fontFamily: "ClickPixel",
-      fontSize: 32,
-      color: "0xFFFFFF",
-      align: "center"
-    };
-
-    switch (key) {
-      case "title":
-        style.fontSize = 24;
-        break;
-      case "preload":
-        style.fontSize = 16;
-        break;
-    }
-
-    return style;
-  }
 
   initOrigin(origin) {
     if (typeof origin === "number") {
