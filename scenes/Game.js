@@ -15,6 +15,9 @@ class Game extends Phaser.Scene {
    * Create level, place living beings and items
    */
   create() {
+    this.spritesData = this.cache.json.get('spritesData');
+    this.textsData = this.cache.json.get('textsData');
+
     // main tile map
     this.map = this.add.tilemap("level1");
     const backgroundTile = this.map.addTilesetImage("overworld", "gameTile");
@@ -29,6 +32,9 @@ class Game extends Phaser.Scene {
 
     this.createWorldAnimations();
     this.createWorldInhabitants();
+
+    this.gameMusic = this.sound.add('ambiance');
+    this.gameMusic.play();
 
     this.cursors = this.input.keyboard.createCursorKeys();
     this.cameras.main.setBounds(
@@ -132,20 +138,22 @@ class Game extends Phaser.Scene {
    * @param anim
    * @returns {Player|Boss|Monster|Pnj}
    */
-  getCreature(name, type, spawn, frame, anim) {
+  getCreature(config) {
     let entity;
+    const {type, spawn, frame, animation} = config;
+
     switch (type) {
       case 'player':
-        entity = new Player(this, this.map, spawn, "worldAnim", frame, anim);
+        entity = new Player(this, this.map, spawn, "worldAnim", frame, animation);
         break;
       case 'boss':
-        entity = new Boss(this, this.map, spawn, "worldAnim", frame, anim);
+        entity = new Boss(this, this.map, spawn, "worldAnim", frame, animation);
         break;
       case 'monster':
-        entity = new Monster(this, this.map, spawn, "worldAnim", frame, anim);
+        entity = new Monster(this, this.map, spawn, "worldAnim", frame, animation);
         break;
       default:
-        entity = new Pnj(this, this.map, spawn, "worldAnim", frame, anim);
+        entity = new Pnj(this, this.map, spawn, "worldAnim", frame, animation);
     }
     return entity;
   }
@@ -158,17 +166,9 @@ class Game extends Phaser.Scene {
    */
   createWorldInhabitants() {
     this.creatures = {};
-    const inhabitants = [
-      ['player', 'player', 'playerSpawn', 'hero-walkdown-1'],
-      ['oldman', 'pnj', 'oldmanSpawn', 'oldman-walkdown-1'],
-      ['grandma', 'pnj', 'grandmaSpawn', 'grandma-walkdown-1'],
-      ['aryl', 'pnj', 'arylSpawn', 'aryl-1', 'spr-aryl'],
-      ['monster1', 'monster', 'monster1Spawn', 'log-walkdown-1'],
-      ['boss', 'boss', 'monster2Spawn', 'pirate-stand-1', 'spr-pirate-stand'],
-    ];
-    inhabitants.forEach(crea => {
-      const entity = this.getCreature(...crea);
-      this.creatures[crea[0]] = { entity: entity, spr: entity.create() };
+    this.spritesData.forEach(config => {
+      const entity = this.getCreature(config);
+      this.creatures[config.name] = { entity: entity, spr: entity.create() };
     });
 
     // coins : this is for the quest, can probably improve that later...
@@ -253,6 +253,7 @@ class Game extends Phaser.Scene {
    */
   collectCoin(player, coin) {
     coin.disableBody(true, true);
+    this.sound.play('coin');
     this.creatures['player'].entity.addScore(1);
     if (this.coins.countActive(true) === 0) {
       // toutes les pièces ont été trouvées : première quête terminée !!
@@ -278,7 +279,10 @@ class Game extends Phaser.Scene {
    * @param enemy
    */
   dammagePlayer(player, enemy) {
-    this.creatures['player'].entity.takeDamage();
+    this.sound.play('damage');
+    this.creatures['player'].entity.takeDamage(
+      () => this.menuMusic.stop()
+    );
 
     // Knocks back enemy after colliding
     if (enemy.body.touching.left) {

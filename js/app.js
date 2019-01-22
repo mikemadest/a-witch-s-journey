@@ -7,12 +7,13 @@ const App = function() {
 
   this.VERSION = "0.0.1";
   this.IS_DEV = true;
+  this.LANGUAGE = "en"; // very basic international support...
 };
 
 App.prototype.start = function() {
   "use strict";
 
-  // Scenes*
+  // Scenes
   const scenes = [];
   scenes.push(Boot);
   scenes.push(Preload);
@@ -45,10 +46,12 @@ App.prototype.start = function() {
   // Globals
   game.IS_DEV = this.IS_DEV;
   game.VERSION = this.VERSION;
+  game.LANGUAGE = this.LANGUAGE;
   game.URL = "";
   game.CONFIG = {
     width: this.config.width,
     height: this.config.height,
+    language: this.LANGUAGE,
     centerX: Math.round(this.config.width / 2),
     centerY: Math.round(this.config.height / 2),
     tile: 32

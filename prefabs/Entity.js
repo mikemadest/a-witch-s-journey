@@ -1,4 +1,18 @@
+/**
+ * Base class for Player, monsters and PNJ
+ */
 class Entity {
+
+  /**
+   * Add entity to spawn point
+   *
+   * @param ctx
+   * @param map
+   * @param spawnName
+   * @param spriteCache
+   * @param spriteKey
+   * @param animName
+   */
   constructor(ctx, map, spawnName, spriteCache, spriteKey, animName) {
     this.map = map;
     this.spawnName = spawnName;
@@ -8,6 +22,10 @@ class Entity {
     this.animName = animName;
   }
 
+  /**
+   * Create sprite, add config and animations if needed
+   * @returns {Array}
+   */
   create() {
     if (typeof this.spawnName === "object") {
       this.spawnName = [this.spawnName];
@@ -28,6 +46,16 @@ class Entity {
     return entities;
   }
 
+  /**
+   * Create and configure sprite, play animation if specified
+   *
+   * @param entity
+   * @param ctx
+   * @param spriteCache
+   * @param spriteKey
+   * @param animName
+   * @returns {*}
+   */
   addSprite(entity, ctx, spriteCache, spriteKey, animName) {
     const tmp = ctx.physics.add.sprite(
       entity.x,
@@ -51,7 +79,7 @@ class Entity {
   }
 
   /**
-   * findObjectsByType - helper to use object layer for element position
+   * findObjectsByType - helper to use object layer for element spawn point
    *
    * @param  {type} type description
    * @param  {type} map  description

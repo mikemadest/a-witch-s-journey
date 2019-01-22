@@ -3,7 +3,7 @@
  *
  * handle creation, control, status
  */
-class Boss extends Entity {
+class Boss extends Monster {
   constructor(ctx, map, spawnName, spriteCache, spriteKey, animName) {
     super(ctx, map, spawnName, spriteCache, spriteKey, animName);
 

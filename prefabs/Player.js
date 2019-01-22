@@ -21,6 +21,9 @@ class Player extends Entity {
   }
 
 
+  /**
+   * Refresh player for each frame
+   */
   update() {
     // Stop any previous movement from the last frame
     this.spr.body.setVelocity(0);
@@ -54,6 +57,9 @@ class Player extends Entity {
   bumped() {}
 
 
+  /**
+   * Add "heart" life bar to UI
+   */
   createLifeBar() {
     const playerLifePos = { x: 12, y: 28 };
     this.playerLifeSprites = [];
@@ -71,6 +77,11 @@ class Player extends Entity {
   }
 
 
+  /**
+   * Add score to UI
+   *
+   * @note : not really relevant here, more a POC than anything else...
+   */
   createScoreText() {
     this.scoreText = this.ctx.add.text(5, 5, "Score: 0", {
       fontSize: "16px",
@@ -79,22 +90,41 @@ class Player extends Entity {
     this.scoreText.setScrollFactor(0);
   }
 
+  /**
+   * Increase score value
+   * @param val int
+   */
   addScore(val) {
     this.playerScore += val;
     this.refreshScore();
   }
 
+  /**
+   * Refresh score UI
+   */
   refreshScore() {
     this.scoreText.setText("Score: " + this.playerScore);
   }
 
+  /**
+   * Refresh life UI
+   */
   refreshLife() {
     this.playerLifeSprites.forEach((heartSprite, index) => {
       heartSprite.visible = this.playerLife >= index + 1;
     });
   }
 
-  takeDamage() {
+
+  /**
+   * Apply damage to user
+   *
+   * display a small animation and decrease life
+   * @param onDeath callback action to use only if the player die
+   *
+   * @todo : improve use of callbacks
+   */
+  takeDamage(onDeath) {
     if (this.spr.immune) return;
     this.spr.immune = true;
 
@@ -104,6 +134,9 @@ class Player extends Entity {
     this.playerLife--;
     this.refreshLife();
     if (this.playerLife <= 0) {
+      if (typeof onDeath === 'function') {
+        onDeath();
+      }
       this.ctx.scene.start("GameOver");
     }
 
@@ -118,7 +151,6 @@ class Player extends Entity {
     }
 
     // Makes the player immune for 0.5 second and then resets it
-
     this.ctx.time.addEvent({
       delay: 150,
       callback: () => {
@@ -138,6 +170,11 @@ class Player extends Entity {
     });
   }
 
+  /**
+   * Player collect heart
+   *
+   * Include for future features
+   */
   getHealing() {
     this.playerLife++;
     this.refreshLife();
