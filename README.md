@@ -7,6 +7,17 @@ Destroy the monster attaking the village, get him back !
 ----------------------
 ## Log
 
+### Version 0.03
+- player life
+- enemy collisions and taking dammage
+- obstacles collisions
+- enemy bump
+- player dammage quick effect + short immunity
+- old code cleanup (a little... refac needed)
+- tilemap cleanup / details update
+
+----------------------
+
 ### Version 0.02
 New entities and animations :
 - now the coin animation is also in the atlas
@@ -29,22 +40,16 @@ New entities and animations :
 
 ## COMING NEXT (subject to change)) :
 
-### Version 0.03
-- player life
-- enemy collisions and taking dammage
-- giving the coins to the old man
-
-----------------------
-
 ### Version 0.04
+- giving the coins to the old man
 - getting the magic staff
 - fireball spell !
-- hitting enemy and destroying them
 
 ----------------------
 
 ### Version 0.05
-- collisions with houses and other stuffs !!
+- hitting enemy and destroying them
+- enemy down animation / explosion
 - old man dialogue
 
 ----------------------
