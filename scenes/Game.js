@@ -34,6 +34,7 @@ class Game extends Phaser.Scene {
     this.createWorldInhabitants();
 
     this.gameMusic = this.sound.add('ambiance');
+    this.gameMusic.setVolume(0.1);
     this.gameMusic.play();
 
     this.cursors = this.input.keyboard.createCursorKeys();

@@ -18,6 +18,7 @@ App.prototype.start = function() {
   scenes.push(Boot);
   scenes.push(Preload);
   scenes.push(Menu);
+  scenes.push(Intro);
   scenes.push(Game);
   scenes.push(GameOver);
 

@@ -1,8 +1,12 @@
 {
   "here": "all game dialogue and texts",
-  "GAME_TITLE": "A\nWitch\nJourney",
+  "GAME_TITLE": "A\nWitch's\nJourney",
   "GAME_START": "Click to start",
+  "CONTINUE": "Click to continue...",
   "GAME_OVER": "Game Over !",
   "GAME_OVER_RESTART": "Click to start again",
-  "MY_INFO": "Mickael Meausoone - www.mkms.fr"
+  "MY_INFO": "Mickael Meausoone - www.mkms.fr",
+  "STORY_1": "A long time ago,\nin a kingdom far far away...",
+  "STORY_2": "Monsters have started\nappearing from the east,\n people were injured.",
+  "STORY_3": "And now your little brother is missing...\nIt's time to do something !"
 }
