@@ -3,14 +3,13 @@ class Entity {
     this.map = map;
     this.spawnName = spawnName;
     this.ctx = ctx;
-    this.spriteCache = spriteCache;
+    this.spriteCache = spriteCache ? spriteCache : "worldAnim";
     this.spriteKey = spriteKey;
     this.animName = animName;
   }
 
   create() {
-
-    if (typeof this.spawnName === 'object') {
+    if (typeof this.spawnName === "object") {
       this.spawnName = [this.spawnName];
     }
     const spawnSearch = this.findObjectsByType(this.spawnName, this.map);
@@ -26,7 +25,6 @@ class Entity {
         )
       );
     });
-
     return entities;
   }
 

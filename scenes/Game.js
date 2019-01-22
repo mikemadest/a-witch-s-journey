@@ -290,40 +290,29 @@ class Game extends Phaser.Scene {
     this.player.body.setVelocity(0);
 
     if (this.cursors.left.isDown) {
-      //this.player.x -= this.playerSpeed;
       this.player.setVelocityX(-this.playerSpeed);
       this.player.anims.play("spr-hero-walkleft", true);
 
       //
     } else if (this.cursors.right.isDown) {
       this.player.setVelocityX(this.playerSpeed);
-      //this.player.x += this.playerSpeed;
       this.player.anims.play("spr-hero-walkright", true);
     }
 
     if (this.cursors.down.isDown) {
-      //this.player.y += this.playerSpeed;
       this.player.setVelocityY(this.playerSpeed);
       this.player.anims.play("spr-hero-walkdown", true);
     } else if (this.cursors.up.isDown) {
-      //this.player.y -= this.playerSpeed;
       this.player.setVelocityY(-this.playerSpeed);
       this.player.anims.play("spr-hero-walkup", true);
     }
 
     // Normalize and scale the velocity so that player can't move faster along a diagonal
     this.player.body.velocity.normalize().scale(this.playerSpeed);
-
-    //this.physics.world.collide(this.player, this.monster1);
-    //this.physics.world.collide(this.player, this.oldman, () => console.log('touch callback'));
-
     this.cameraDolly.x = Math.floor(this.player.x);
     this.cameraDolly.y = Math.floor(this.player.y);
   }
 
-  overHouse() {
-    console.log("over a house !");
-  }
 
   /**
    * collectCoin - action when user overlap a coin
