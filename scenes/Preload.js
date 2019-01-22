@@ -21,6 +21,7 @@ class Preload extends Phaser.Scene {
       ["hero-walkleft", { start: 1, end: 4 }],
       ["hero-walkright", { start: 1, end: 4 }],
       ["fountain", { start: 1, end: 3 }],
+      ["heart", { start: 1, end: 5 }],
       ["waterfall", { start: 1, end: 3 }],
       ["waterfall-b", { start: 1, end: 3 }],
       ["log-walkdown", { frames: [1, 2, 1, 3] }],
