@@ -5,111 +5,50 @@
 class Preload extends Phaser.Scene {
   constructor() {
     super({ key: "Preload", active: false });
-
-    this.witch_images = [
-      ["gameTile", "tilemap/overworld.png"],
-      ["objectsTile", "tilemap/objects.png"],
-      ["charactersTile", "tilemap/character.png"]
-    ];
-
-    this.witch_anims = [
-      ["coin", { start: 1, end: 4 }],
-      ["aryl", { start: 1, end: 4 }],
-      ["talking", { start: 1, end: 4 }],
-      ["hero-walkdown", { start: 1, end: 4 }],
-      ["hero-walkup", { start: 1, end: 4 }],
-      ["hero-walkleft", { start: 1, end: 4 }],
-      ["hero-walkright", { start: 1, end: 4 }],
-      ["fountain", { start: 1, end: 3 }],
-      ["heart", { start: 1, end: 5 }],
-      ["waterfall", { start: 1, end: 3 }],
-      ["waterfall-b", { start: 1, end: 3 }],
-      ["log-walkdown", { frames: [1, 2, 1, 3] }],
-      ["log-walkup", { frames: [1, 2, 1, 3] }],
-      ["log-walkleft", { frames: [1, 2, 1, 3] }],
-      ["log-walkright", { frames: [1, 2, 1, 3] }],
-      ["oldman-walkdown", { frames: [1, 2, 1, 3] }],
-      ["oldman-walkup", { frames: [1, 2, 1, 3] }],
-      ["oldman-walkleft", { frames: [1, 2, 1, 3] }],
-      ["oldman-walkright", { frames: [1, 2, 1, 3] }],
-      ["grandma-walkdown", { frames: [1, 2, 1, 3] }],
-      ["grandma-walkup", { frames: [1, 2, 1, 3] }],
-      ["grandma-walkleft", { frames: [1, 2, 1, 3] }],
-      ["grandma-walkright", { frames: [1, 2, 1, 3] }],
-      ["pirate-walkleft", { frames: [1, 2, 1, 3] }],
-      ["pirate-walkright", { frames: [1, 2, 1, 3] }],
-      [
-        "pirate-stand",
-        {
-          frames: [
-            1,
-            2,
-            3,
-            4,
-            4,
-            4,
-            4,
-            3,
-            2,
-            3,
-            4,
-            4,
-            3,
-            3,
-            2,
-            1,
-            1,
-            1,
-            2,
-            2,
-            1,
-            1,
-            2,
-            3,
-            2,
-            1,
-            1,
-            2,
-            2,
-            1,
-            1,
-            2,
-            3,
-            2,
-            1
-          ],
-          speed: 4
-        }
-      ]
-    ];
   }
 
+  /**
+   *
+   */
   init() {
     // globals
     this.URL = this.sys.game.URL;
     this.CONFIG = this.sys.game.CONFIG;
   }
 
+  /**
+   *
+   */
   preload() {
     this.createBackground();
     this.createLoadingBar();
+    this.preloadData = this.cache.json.get('preloadData');
 
     // spritesheets
-    this.load.setPath(this.URL + "assets/");
-    this.witch_images.forEach(item => this.load.image(item[0], item[1]));
-    this.load.tilemapTiledJSON("level1", "tilemap/level1.json");
+    this.load.setPath(this.URL);
+    this.preloadData["images"].forEach(item => this.load.image(item[0], item[1]));
+    this.load.tilemapTiledJSON("level1", "assets/tilemap/level1.json");
 
     this.load.atlas(
       "worldAnim",
-      "atlas/atlas.png",
-      "atlas/atlas.json",
+      "assets/atlas/atlas.png",
+      "assets/atlas/atlas.json",
       Phaser.Loader.TEXTURE_ATLAS_JSON_HASH
     );
+
+    this.load.json('spritesData', 'data/sprites.json');
+    //this.load.bitmapFont("dialogueFont", "assets/fonts/good_neighbors.png");
+
+    this.preloadData["audio"].forEach(item => this.load.audio(item[0], item[1]));
+
   }
 
+  /**
+   *
+   */
   create() {
     // create animations
-    this.witch_anims.forEach(item =>
+    this.preloadData["anims"].forEach(item =>
       this.createAnims(item[0], "worldAnim", item[1])
     );
 
@@ -117,12 +56,21 @@ class Preload extends Phaser.Scene {
     this.scene.start("Menu");
   }
 
+  /**
+   *
+   */
   createBackground() {
     this.bg = this.add.graphics({ x: 0, y: 0 });
     this.bg.fillStyle("0xF4CCA1", 1);
     this.bg.fillRect(0, 0, this.CONFIG.width, this.CONFIG.height);
   }
 
+  /**
+   *
+   * @param animName
+   * @param cachename
+   * @param framesCfg
+   */
   createAnims(animName, cachename, framesCfg) {
     if (!animName) return;
     const config = { ...framesCfg, prefix: animName + "-" };
@@ -136,6 +84,9 @@ class Preload extends Phaser.Scene {
     });
   }
 
+  /**
+   *
+   */
   createLoadingBar() {
     // Title
     this.title = new Text(
@@ -167,6 +118,10 @@ class Preload extends Phaser.Scene {
     this.load.on("progress", this.onProgress, this);
   }
 
+  /**
+   *
+   * @param val
+   */
   onProgress(val) {
     // Width of progress bar
     const w = this.CONFIG.width - 2 * this.progress.x;

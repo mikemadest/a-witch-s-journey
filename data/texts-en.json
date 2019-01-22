@@ -1,0 +1,17 @@
+{
+  "here": "all game dialogue and texts",
+  "GAME_TITLE": "A\nWitch's\nJourney",
+  "GAME_START": "Click to start",
+  "CONTINUE": "Click to continue...",
+  "GAME_OVER": "Game Over !",
+  "GAME_OVER_RESTART": "Click to start again",
+  "MY_INFO": "Mickael Meausoone - www.mkms.fr",
+  "STORY_1": "A long time ago,\nin a kingdom far far away...",
+  "STORY_2": "Monsters have started\nappearing from the east,\n people were injured.",
+  "STORY_3": "And now your little brother is missing...\nIt's time to do something !",
+  "QUEST_1": "Hello young man !\nSo you want to help the village ?\nIf you bring me 6 coins\nyou'll have the magic staff !",
+  "QUEST_STATUS": "Remaining coins : ",
+  "QUEST_SUCCESS1": "You have enough coins !",
+  "QUEST_SUCCESS2": "Go grab the staff !",
+  "QUEST_ENDED": "Well done youngling !\nplease use this magic staff with care.\n\nYOU NOW HAVE THE MAGIC STAFF !"
+}

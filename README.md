@@ -2,10 +2,24 @@
 Small demo game using Phaser
 
 Your little brother have disapeared !
-Destroy the monster attaking the village, get him back !
+Destroy the monsters attaking the village, get him back !
 
 ----------------------
 ## Log
+
+### Version 0.05
+- giving the coins to the old man
+- getting the magic staff
+- old man dialogue
+
+----------------------
+
+### Version 0.04
+- Intro and story
+- Music and sounds
+- new Title Screen !
+
+----------------------
 
 ### Version 0.03
 - player life
@@ -40,27 +54,19 @@ New entities and animations :
 
 ## COMING NEXT (subject to change)) :
 
-### Version 0.04
-- giving the coins to the old man
-- getting the magic staff
+### Version 0.06
+- hitting enemy and destroying them
+- enemy down animation / explosion
 - fireball spell !
 
 ----------------------
 
-### Version 0.05
-- hitting enemy and destroying them
-- enemy down animation / explosion
-- old man dialogue
-
-----------------------
-
-### Version 0.06
+### Version 0.07
 - moving monster in the forest
 - pirate attacks ?
 
 ----------------------
 ## Future features :
-
 - Monster basic AI, attack when the player is close, move arround
 - monster spawn
 - bridge boss attacks and script

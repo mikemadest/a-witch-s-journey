@@ -1,7 +1,7 @@
 /**
- *
+ * Just a short game level :
+ * find all coins, buy the staff and defeat monsters !
  **/
-
 class Game extends Phaser.Scene {
   constructor() {
     super({ key: "Game", active: false });
@@ -11,161 +11,331 @@ class Game extends Phaser.Scene {
     this.CONFIG = this.sys.game.CONFIG;
   }
 
+  /**
+   * Create level, place living beings and items
+   */
   create() {
-    // main tile map
+    this.spritesData = this.cache.json.get("spritesData");
+    this.textsData = this.cache.json.get("textsData");
 
+    // main tile map
     this.map = this.add.tilemap("level1");
     const backgroundTile = this.map.addTilesetImage("overworld", "gameTile");
-    const objectsTile = this.map.addTilesetImage("objects", "objectsTile");
-    this.backgroundLayer = this.map.createStaticLayer(
-      "background",
-      backgroundTile,
-      0,
-      0
+    this.staticLayers = {};
+    ["background", "details", "details2", "deco", "houses"].forEach(
+      layerName =>
+        (this.staticLayers[layerName] = this.map.createStaticLayer(
+          layerName,
+          backgroundTile,
+          0,
+          0
+        ))
     );
 
-    this.detailsLayer = this.map.createStaticLayer(
-      "details",
-      backgroundTile,
+    this.questRemainingCoins = 1;
+    this.questRequiredCoins = 1;
+    this.questEnded = false;
+    this.createWorldAnimations();
+    this.createWorldInhabitants();
+
+    this.gameMusic = this.sound.add("ambiance");
+    this.gameMusic.setVolume(0.1);
+    this.gameMusic.play();
+
+    this.cursors = this.input.keyboard.createCursorKeys();
+    this.cameras.main.setBounds(
       0,
-      0
+      0,
+      this.map.widthInPixels,
+      this.map.heightInPixels
     );
-    this.details2Layer = this.map.createStaticLayer(
-      "details2",
-      backgroundTile,
-      0,
-      0
+    this.cameraDolly = new Phaser.Geom.Point(
+      this.creatures["player"].spr.x,
+      this.creatures["player"].spr.y
     );
-    this.details2Layer = this.map.createStaticLayer(
-      "deco",
-      backgroundTile,
+    this.cameras.main.startFollow(this.cameraDolly);
+
+    this.physics.world.setBounds(
       0,
-      0
-    );
-    this.housesLayer = this.map.createStaticLayer(
-      "houses",
-      backgroundTile,
       0,
-      0
+      this.map.widthInPixels,
+      this.map.heightInPixels
     );
 
-    this.playerScore = 0;
-    this.playerLife = 3;
-    this.enemyLife = {
-      monster1: 2,
-      monster2: 5
-    };
-    this.scoreText = this.add.text(5, 5, "Score: 0", {
-      fontSize: "16px",
-      fill: "#fff"
-    });
-    this.scoreText.setScrollFactor(0);
+    this.handleCollisions();
 
-    const playerLifePos = { x: 12, y: 28 };
-    this.playerLifeSprites = [];
-    for (let i = 0; i < this.playerLife; i++) {
-      const tmp = this.physics.add.sprite(
-        playerLifePos.x + i * 20,
-        playerLifePos.y,
-        "worldAnim",
-        "heart-1"
-      );
-      tmp.setScrollFactor(0);
-      tmp.anims.play("spr-heart", true);
-      this.playerLifeSprites.push(tmp);
+    this.showQuest();
+
+    // debug
+    // this.showDebugInfos();
+  }
+
+  createModal(text, x, y, width) {
+    const lineCount = text.split("\n").length;
+    const textSize = 20 * lineCount;
+    const padding = 15;
+    const w = typeof width === "number" ? width : 0.95 * this.CONFIG.width;
+    const h = textSize + padding * 2;
+
+    x = typeof x === "number" ? x : (this.CONFIG.width - w) / 2;
+    if (x < 0) {
+      x = this.CONFIG.width - w + x;
     }
+    y = typeof y === "number" ? y : this.CONFIG.centerY + 5;
+    const boxBg = this.add.graphics({ x: x, y: y });
+    boxBg.clear().setScrollFactor(0);
+    boxBg.fillStyle("0xFFFFFF", 1);
+    boxBg.fillRect(0, 0, w, h).setAlpha(0);
 
-    this.refreshPlayerLife();
+    const boxBorder = this.add.graphics({ x: x, y: y });
+    boxBorder.clear().setScrollFactor(0);
+    boxBorder.lineStyle(4, "0x4D6592", 1);
+    boxBorder.strokeRect(0, 0, w, h).setAlpha(0);
 
-    // player
-    this.playerEntity = new Entity(
-      this,
-      this.map,
-      "playerSpawn",
-      "worldAnim",
-      "hero-walkdown-1"
-    );
-    this.player = this.playerEntity.create()[0];
-    this.housesLayer.setCollisionByExclusion([-1]);
-    this.physics.add.collider(this.player, this.housesLayer);
-    this.detailsLayer.setCollisionByExclusion([-1]);
-    this.physics.add.collider(this.player, this.detailsLayer);
+    const questText = this.add
+      .text(x + padding, y + padding, text, {
+        fill: "#000",
+        fontSize: "16px",
+        fontFamily: "Verdana, sans serif"
+      })
+      .setLineSpacing(3)
+      .setOrigin(0)
+      .setScrollFactor(0)
+      .setAlpha(0);
 
-    // old man
-    this.oldmanEntity = new Entity(
-      this,
-      this.map,
-      "oldmanSpawn",
-      "worldAnim",
-      "oldman-walkdown-1"
-    );
-    this.oldman = this.oldmanEntity.create()[0];
-    this.oldman.body.immovable = true;
-    this.physics.add.collider(this.player, this.oldman);
+    return [questText, boxBg, boxBorder];
+  }
 
-    this.talkingEntity = new Entity(
-      this,
-      this.map,
-      "talkingSpawn",
-      "worldAnim",
-      "talking-1",
-      "spr-talking"
-    );
-    this.talking = this.talkingEntity.create()[0];
-    this.timedEvent = this.time.addEvent({
-      delay: 500,
-      callback: this.talkingEvent,
-      callbackScope: this,
-      repeat: 3
+  showQuest() {
+    const modalElements = this.createModal(this.textsData["QUEST_1"]);
+    const tween = this.tweens.add({
+      targets: modalElements,
+      alpha: 1,
+      duration: 1000,
+      ease: "Cubic",
+      easeParams: [1, 1]
     });
 
-    // grandma
-    this.grandmaEntity = new Entity(
+    this.waitInputToContinue(() => {
+      this.waitInputToContinue(false);
+      tween.stop();
+      this.tweens.add({
+        targets: modalElements,
+        alpha: 0,
+        duration: 900,
+        ease: "Cubic",
+        easeParams: [1, 1],
+        onComplete: () => {
+          tween.stop();
+          this.showQuestStatus();
+        }
+      });
+    });
+  }
+
+  showQuestStatus() {
+    this.statusModal = this.createModal(
+      this.textsData["QUEST_STATUS"] +
+        this.questRemainingCoins +
+        "  / " +
+        this.questRequiredCoins,
+      -5,
+      5,
+      this.CONFIG.width * 0.6
+    );
+    this.tweens.add({
+      targets: this.statusModal,
+      alpha: 1,
+      duration: 1000,
+      ease: "Cubic",
+      easeParams: [1, 1],
+      delay: 0
+    });
+  }
+
+  /**
+   * Refresh player movement, camera and monsters
+   *
+   * @param time
+   * @param delta
+   */
+  update(time, delta) {
+    this.creatures["player"].entity.update();
+    this.cameraDolly.x = Math.floor(this.creatures["player"].spr.x);
+    this.cameraDolly.y = Math.floor(this.creatures["player"].spr.y);
+  }
+
+  /**
+   * waitInputToContinue
+   *
+   * @param  {type} callback description
+   * @return {type}          description
+   */
+  waitInputToContinue(callback) {
+    if (typeof callback !== 'function') {
+      this.input.off("pointerup");
+      this.input.keyboard.off("keyup");
+      return;
+    }
+    this.input.on("pointerup", callback, this);
+    function handleKeyUp(e) {
+      switch (e.code) {
+        case "Enter":
+          callback();
+          break;
+      }
+    }
+    this.input.keyboard.on("keyup", handleKeyUp, this);
+  }
+
+  /**
+   * Debug helper, needs to work on that
+   */
+  showDebugInfos() {
+    this.physics.world.createDebugGraphic();
+    const graphics = this.add
+      .graphics()
+      .setAlpha(0.75)
+      .setDepth(20);
+    this.backgroundLayer.renderDebug(graphics, {
+      tileColor: null, // Color of non-colliding tiles
+      collidingTileColor: new Phaser.Display.Color(243, 134, 48, 255), // Color of colliding tiles
+      faceColor: new Phaser.Display.Color(40, 39, 37, 255) // Color of colliding face edges
+    });
+  }
+
+  /**
+   * Manage collision : creature taking dammage, etc.
+   */
+  handleCollisions() {
+    this.staticLayers["houses"].setCollisionByExclusion([-1]);
+    this.physics.add.collider(
+      this.creatures["player"].spr,
+      this.staticLayers["houses"]
+    );
+    this.staticLayers["details"].setCollisionByExclusion([-1]);
+    this.physics.add.collider(
+      this.creatures["player"].spr,
+      this.staticLayers["details"]
+    );
+    this.physics.add.collider(
+      this.creatures["player"].spr,
+      this.creatures["grandma"].spr
+    );
+    this.physics.add.collider(
+      this.creatures["player"].spr,
+      this.creatures["aryl"].spr
+    );
+    this.physics.add.collider(this.creatures["player"].spr, this.fountain);
+
+    this.physics.add.overlap(
+      this.creatures["player"].spr,
+      this.coins,
+      this.collectCoin,
+      null,
+      this
+    );
+
+    this.physics.add.collider(
+      this.creatures["player"].spr,
+      this.creatures["monster1"].spr,
+      this.dammagePlayer,
+      null,
+      this
+    );
+    this.physics.add.collider(
+      this.creatures["player"].spr,
+      this.creatures["oldman"].spr,
+      this.returnQuest,
+      null,
+      this
+    );
+
+    this.physics.add.collider(
+      this.creatures["player"].spr,
+      this.creatures["boss"].spr,
+      this.dammagePlayer,
+      null,
+      this
+    );
+  }
+
+  /**
+   * Temporary creature creation
+   *
+   * @param name
+   * @param type
+   * @param spawn
+   * @param frame
+   * @param anim
+   * @returns {Player|Boss|Monster|Pnj}
+   */
+  getCreature(config) {
+    let entity;
+    const { type, spawn, frame, animation } = config;
+
+    switch (type) {
+      case "player":
+        entity = new Player(
+          this,
+          this.map,
+          spawn,
+          "worldAnim",
+          frame,
+          animation
+        );
+        break;
+      case "boss":
+        entity = new Boss(this, this.map, spawn, "worldAnim", frame, animation);
+        break;
+      case "monster":
+        entity = new Monster(
+          this,
+          this.map,
+          spawn,
+          "worldAnim",
+          frame,
+          animation
+        );
+        break;
+      default:
+        entity = new Pnj(this, this.map, spawn, "worldAnim", frame, animation);
+    }
+    return entity;
+  }
+
+  /**
+   * Create sprites for everything with "AI" or user control
+   *
+   * For now we use a hash table to reference them... not optimal
+   */
+  createWorldInhabitants() {
+    this.creatures = {};
+    this.spritesData.forEach(config => {
+      const entity = this.getCreature(config);
+      this.creatures[config.name] = { entity: entity, spr: entity.create() };
+    });
+
+    // coins : this is for the quest, can probably improve that later...
+    this.coins = this.physics.add.group();
+    this.coins.enableBody = true;
+    this.coinEntity = new Entity(
       this,
       this.map,
-      "grandmaSpawn",
+      "coin",
       "worldAnim",
-      "grandma-walkdown-1"
+      "coin-1",
+      "spr-coin"
     );
-    this.grandma = this.grandmaEntity.create()[0];
-    this.grandma.body.immovable = true;
-    this.physics.add.collider(this.player, this.grandma);
+    this.coinEntity.create().forEach(coin => this.coins.add(coin));
+  }
 
-    // aryl
-    this.arylEntity = new Entity(
-      this,
-      this.map,
-      "arylSpawn",
-      "worldAnim",
-      "aryl-1",
-      "spr-aryl"
-    );
-    this.aryl = this.arylEntity.create()[0];
-    this.aryl.body.immovable = true;
-    this.physics.add.collider(this.player, this.aryl);
-
-    // monster
-    this.monster1Entity = new Entity(
-      this,
-      this.map,
-      "monster1Spawn",
-      "worldAnim",
-      "log-walkdown-1"
-    );
-    this.monster1 = this.monster1Entity.create()[0];
-
-    this.monster2Entity = new Entity(
-      this,
-      this.map,
-      "monster2Spawn",
-      "worldAnim",
-      "pirate-stand-1",
-      "spr-pirate-stand"
-    );
-    this.monster2 = this.monster2Entity.create()[0];
-    this.monster2.body.immovable = true;
-
-    // deco
+  /**
+   * Create sprite for moving decoration like waterfall
+   *
+   * Don't know how to better handle level animations YET...
+   */
+  createWorldAnimations() {
     this.fountainEntity = new Entity(
       this,
       this.map,
@@ -176,7 +346,6 @@ class Game extends Phaser.Scene {
     );
     this.fountain = this.fountainEntity.create()[0];
     this.fountain.body.immovable = true;
-    this.physics.add.collider(this.player, this.fountain);
 
     this.waterfallEntity = new Entity(
       this,
@@ -198,131 +367,22 @@ class Game extends Phaser.Scene {
     );
     this.waterfall = this.waterfallEntity.create()[0];
 
-    // coins
-    this.coins = this.physics.add.group();
-    this.coins.enableBody = true;
-    this.coinEntity = new Entity(
+    // little bubble to attract attention, may add an "Expression" entity later
+    this.talkingEntity = new Entity(
       this,
       this.map,
-      "coin",
+      "talkingSpawn",
       "worldAnim",
-      "coin-1",
-      "spr-coin"
+      "talking-1",
+      "spr-talking"
     );
-    this.coinEntity.create().forEach(coin => this.coins.add(coin));
-
-    // collisions
-    this.physics.world.enable([this.player, this.monster1, this.monster2]);
-    this.player.body.setBounce(1, 1).setCollideWorldBounds(true);
-    this.monster1.body.setBounce(1, 1).setCollideWorldBounds(true);
-
-    this.physics.add.overlap(
-      this.player,
-      this.coins,
-      this.collectCoin,
-      null,
-      this
-    );
-
-    this.physics.add.collider(
-      this.player,
-      this.monster1,
-      this.dammagePlayer,
-      null,
-      this
-    );
-
-    this.physics.add.collider(
-      this.player,
-      this.monster2,
-      this.dammagePlayer,
-      null,
-      this
-    );
-
-    this.cursors = this.input.keyboard.createCursorKeys();
-    this.cameras.main.setBounds(
-      0,
-      0,
-      this.map.widthInPixels,
-      this.map.heightInPixels
-    );
-    this.cameraDolly = new Phaser.Geom.Point(this.player.x, this.player.y);
-    this.cameras.main.startFollow(this.cameraDolly);
-
-    this.physics.world.setBounds(
-      0,
-      0,
-      this.map.widthInPixels,
-      this.map.heightInPixels
-    );
-
-    // debug
-
-    /*this.physics.world.createDebugGraphic();
-    const graphics = this.add
-      .graphics()
-      .setAlpha(0.75)
-      .setDepth(20);
-    this.backgroundLayer.renderDebug(graphics, {
-      tileColor: null, // Color of non-colliding tiles
-      collidingTileColor: new Phaser.Display.Color(243, 134, 48, 255), // Color of colliding tiles
-      faceColor: new Phaser.Display.Color(40, 39, 37, 255) // Color of colliding face edges
-    });*/
-
-    //
-  }
-
-  talkingEvent() {
-    this.talking.visible = !this.talking.visible;
-  }
-
-  refreshPlayerLife() {
-    this.playerLifeSprites.forEach((heartSprite, index) => {
-      heartSprite.visible = this.playerLife >= index + 1;
+    this.talking = this.talkingEntity.create()[0];
+    this.time.addEvent({
+      delay: 500,
+      callback: () => (this.talking.visible = !this.talking.visible),
+      callbackScope: this,
+      repeat: 3
     });
-  }
-
-  update(time, delta) {
-    this.playerSpeed = 60;
-
-    // Stop any previous movement from the last frame
-    this.player.body.setVelocity(0);
-
-    if (this.cursors.left.isDown) {
-      //this.player.x -= this.playerSpeed;
-      this.player.setVelocityX(-this.playerSpeed);
-      this.player.anims.play("spr-hero-walkleft", true);
-
-      //
-    } else if (this.cursors.right.isDown) {
-      this.player.setVelocityX(this.playerSpeed);
-      //this.player.x += this.playerSpeed;
-      this.player.anims.play("spr-hero-walkright", true);
-    }
-
-    if (this.cursors.down.isDown) {
-      //this.player.y += this.playerSpeed;
-      this.player.setVelocityY(this.playerSpeed);
-      this.player.anims.play("spr-hero-walkdown", true);
-    } else if (this.cursors.up.isDown) {
-      //this.player.y -= this.playerSpeed;
-      this.player.setVelocityY(-this.playerSpeed);
-      this.player.anims.play("spr-hero-walkup", true);
-    }
-
-    // Normalize and scale the velocity so that player can't move faster along a diagonal
-    this.player.body.velocity.normalize().scale(this.playerSpeed);
-
-    //this.physics.world.collide(this.player, this.monster1);
-    //this.physics.world.collide(this.player, this.oldman, () => console.log('touch callback'));
-
-    this.cameraDolly.x = Math.floor(this.player.x);
-    this.cameraDolly.y = Math.floor(this.player.y);
-  }
-
-  overHouse() {
-    console.log("over a house !");
   }
 
   /**
@@ -334,10 +394,20 @@ class Game extends Phaser.Scene {
    */
   collectCoin(player, coin) {
     coin.disableBody(true, true);
-    this.playerScore++;
-    this.scoreText.setText("Score: " + this.playerScore);
-    if (this.coins.countActive(true) === 0) {
-      // toutes les pièces ont été trouvées : première quête terminée !!
+    this.sound.play("coin");
+    this.questRemainingCoins--;
+    this.creatures["player"].entity.addScore(1);
+    if (this.questRemainingCoins === 0) {
+      // coins obtained ! Quest is over
+      this.statusModal[0].setText(this.textsData["QUEST_SUCCESS1"]);
+
+      this.time.addEvent({
+        delay: 2000,
+        callback: () => {
+          this.statusModal[0].setText(this.textsData["QUEST_SUCCESS2"]);
+        },
+        callbackScope: this
+      });
     }
   }
 
@@ -349,24 +419,53 @@ class Game extends Phaser.Scene {
    * @return {type}        description
    */
   collectHeart(player, heart) {
-    this.playerLife++;
-    this.refreshPlayerLife();
+    this.creatures["player"].entity.getHealing();
     heart.disableBody(true, true);
   }
 
-  dammagePlayer(player, enemy) {
-    if (player.immune) return;
+  returnQuest() {
+    if (!this.questEnded && this.questRemainingCoins === 0) {
+      this.questEnded = true;
+      this.tweens.add({
+        targets: this.statusModal,
+        alpha: 0,
+        duration: 1000,
+        ease: "Cubic",
+        easeParams: [1, 1],
+        delay: 0
+      });
 
-    player.immune = true;
+      const modalElements = this.createModal(this.textsData["QUEST_ENDED"]);
+      const tween = this.tweens.add({
+        targets: modalElements,
+        alpha: 1,
+        duration: 1000,
+        ease: "Cubic",
+        easeParams: [1, 1]
+      });
 
-    // play hurt animations
-    player.setTint(0xff0000);
-    player.setBounce(1, 1);
-    this.playerLife--;
-    this.refreshPlayerLife();
-    if (this.playerLife <= 0) {
-      this.scene.start("GameOver");
+      this.waitInputToContinue(() => {
+        tween.stop();
+        this.waitInputToContinue(false);
+        this.tweens.add({
+          targets: modalElements,
+          alpha: 0,
+          duration: 900,
+          ease: "Cubic",
+          easeParams: [1, 1]
+        });
+      });
     }
+  }
+
+  /**
+   *
+   * @param player
+   * @param enemy
+   */
+  dammagePlayer(player, enemy) {
+    this.sound.play("damage");
+    this.creatures["player"].entity.takeDamage(() => this.menuMusic.stop());
 
     // Knocks back enemy after colliding
     if (enemy.body.touching.left) {
@@ -379,32 +478,10 @@ class Game extends Phaser.Scene {
       enemy.body.velocity.y = -150;
     }
 
-    if (player.body.touching.left) {
-      player.body.velocity.x = 150;
-    } else if (player.body.touching.right) {
-      player.body.velocity.x = -150;
-    } else if (player.body.touching.up) {
-      player.body.velocity.y = 150;
-    } else if (player.body.touching.down) {
-      player.body.velocity.y = -150;
-    }
-
-    // Makes the player immune for 0.5 second and then resets it
-
     this.time.addEvent({
       delay: 150,
       callback: () => {
         enemy.body.setVelocity(0);
-        player.clearTint();
-      },
-      callbackScope: this,
-      repeat: 0
-    });
-
-    this.time.addEvent({
-      delay: 500,
-      callback: () => {
-        player.immune = false;
       },
       callbackScope: this,
       repeat: 0

@@ -2,13 +2,13 @@
  *
  **/
 class Text {
-  constructor(ctx, x, y, string, size, origin) {
+  constructor(ctx, x, y, string, size, origin, fontFamily) {
     this.ctx = ctx;
     this.x = x;
     this.y = y;
     this.text = string;
     this.style = {
-      fontFamily: "ClickPixel",
+      fontFamily: fontFamily ? fontFamily : "ClickPixel",
       fontSize: size,
       color: "0xFFFFFF",
       align: "center"
