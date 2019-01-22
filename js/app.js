@@ -18,6 +18,7 @@ App.prototype.start = function() {
   scenes.push(Preload);
   scenes.push(Menu);
   scenes.push(Game);
+  scenes.push(GameOver);
 
   // Game config
   this.config = {

@@ -23,7 +23,6 @@ class Game extends Phaser.Scene {
       0,
       0
     );
-    //this.backgroundLayer.setCollisionByProperty({collides: true});
 
     this.detailsLayer = this.map.createStaticLayer(
       "details",
@@ -37,42 +36,60 @@ class Game extends Phaser.Scene {
       0,
       0
     );
+    this.details2Layer = this.map.createStaticLayer(
+      "deco",
+      backgroundTile,
+      0,
+      0
+    );
     this.housesLayer = this.map.createStaticLayer(
       "houses",
       backgroundTile,
       0,
       0
     );
-    //this.housesLayer.setDepth(1);
-    //this.housesLayer.enableBody = true;
-    //this.housesLayer.setCollisionByProperty({ collides: true });
-    //this.housesLayer.setCollisionByExclusion([-1]);
-    //this.housesLayer.setCollisionBetween(1, 200);
-    //this.map.setCollisionBetween(1, 999, true, 'houses');
 
-    /*var overlapObjects = this.map.getObjectLayer('houses')['objects']; //my Object layer was called Overlap
-    let overlapObjectsGroup = this.game.physics.add.staticGroup({ });
-    let i = 0;
-    overlapObjects.forEach(object => {
-      let obj = overlapObjectsGroup.create(object.x, object.y, 'grass');
-      obj.setScale(object.width/16, object.height/16); //my tile size was 32
-      obj.setOrigin(0); //the positioning was off, and B3L7 mentioned the default was 0.5
-      obj.body.width = object.width; //body of the physics body
-      obj.body.height = object.height;
+    this.playerScore = 0;
+    this.playerLife = 3;
+    this.enemyLife = {
+      monster1: 2,
+      monster2: 5
+    };
+    this.scoreText = this.add.text(5, 5, "Score: 0", {
+      fontSize: "16px",
+      fill: "#fff"
     });
-    overlapObjectsGroup.refresh(); //physics body needs to refresh
-    console.log(overlapObjectsGroup);
-    //this.game.physics.add.overlap(this.player, overlapObjectsGroup, this.test, null, this);*/
+    this.scoreText.setScrollFactor(0);
+
+    const playerLifePos = { x: 12, y: 28 };
+    this.playerLifeSprites = [];
+    for (let i = 0; i < this.playerLife; i++) {
+      const tmp = this.physics.add.sprite(
+        playerLifePos.x + i * 20,
+        playerLifePos.y,
+        "worldAnim",
+        "heart-1"
+      );
+      tmp.setScrollFactor(0);
+      tmp.anims.play("spr-heart", true);
+      this.playerLifeSprites.push(tmp);
+    }
+
+    this.refreshPlayerLife();
 
     // player
     this.playerEntity = new Entity(
       this,
       this.map,
-      "playerSpawn", // playerSpawn
+      "playerSpawn",
       "worldAnim",
       "hero-walkdown-1"
     );
     this.player = this.playerEntity.create()[0];
+    this.housesLayer.setCollisionByExclusion([-1]);
+    this.physics.add.collider(this.player, this.housesLayer);
+    this.detailsLayer.setCollisionByExclusion([-1]);
+    this.physics.add.collider(this.player, this.detailsLayer);
 
     // old man
     this.oldmanEntity = new Entity(
@@ -80,13 +97,11 @@ class Game extends Phaser.Scene {
       this.map,
       "oldmanSpawn",
       "worldAnim",
-      "oldman-walkdown-1" /*,
-      "spr-oldman-walkdown"*/
+      "oldman-walkdown-1"
     );
     this.oldman = this.oldmanEntity.create()[0];
+    this.oldman.body.immovable = true;
     this.physics.add.collider(this.player, this.oldman);
-
-    //talkingSpawn
 
     this.talkingEntity = new Entity(
       this,
@@ -110,10 +125,10 @@ class Game extends Phaser.Scene {
       this.map,
       "grandmaSpawn",
       "worldAnim",
-      "grandma-walkdown-1" /*,
-      "spr-oldman-walkdown"*/
+      "grandma-walkdown-1"
     );
     this.grandma = this.grandmaEntity.create()[0];
+    this.grandma.body.immovable = true;
     this.physics.add.collider(this.player, this.grandma);
 
     // aryl
@@ -126,6 +141,7 @@ class Game extends Phaser.Scene {
       "spr-aryl"
     );
     this.aryl = this.arylEntity.create()[0];
+    this.aryl.body.immovable = true;
     this.physics.add.collider(this.player, this.aryl);
 
     // monster
@@ -137,7 +153,6 @@ class Game extends Phaser.Scene {
       "log-walkdown-1"
     );
     this.monster1 = this.monster1Entity.create()[0];
-    this.physics.add.collider(this.player, this.monster1);
 
     this.monster2Entity = new Entity(
       this,
@@ -148,7 +163,7 @@ class Game extends Phaser.Scene {
       "spr-pirate-stand"
     );
     this.monster2 = this.monster2Entity.create()[0];
-    this.physics.add.collider(this.player, this.monster2);
+    this.monster2.body.immovable = true;
 
     // deco
     this.fountainEntity = new Entity(
@@ -160,6 +175,8 @@ class Game extends Phaser.Scene {
       "spr-fountain"
     );
     this.fountain = this.fountainEntity.create()[0];
+    this.fountain.body.immovable = true;
+    this.physics.add.collider(this.player, this.fountain);
 
     this.waterfallEntity = new Entity(
       this,
@@ -180,7 +197,6 @@ class Game extends Phaser.Scene {
       "spr-waterfall-b"
     );
     this.waterfall = this.waterfallEntity.create()[0];
-    //this.physics.add.collider(this.player, this.fountain);
 
     // coins
     this.coins = this.physics.add.group();
@@ -196,14 +212,10 @@ class Game extends Phaser.Scene {
     this.coinEntity.create().forEach(coin => this.coins.add(coin));
 
     // collisions
+    this.physics.world.enable([this.player, this.monster1, this.monster2]);
+    this.player.body.setBounce(1, 1).setCollideWorldBounds(true);
+    this.monster1.body.setBounce(1, 1).setCollideWorldBounds(true);
 
-    // 127, 128, 129, 130, 131
-    //var testHouses = this.map.createFromObjects('houses', 4, { key: 'coinanim' });
-    //this.housesLayer.setCollision(0, false);
-    //this.housesLayer.setCollision(169, true);
-    //this.physics.add.collider(this.player, this.housesLayer);
-    //this.physics.add.overlap(this.player, this.housesLayer, this.overHouse, null, this);
-    //this.physics.add.collider(this.player, this.coins);
     this.physics.add.overlap(
       this.player,
       this.coins,
@@ -212,9 +224,21 @@ class Game extends Phaser.Scene {
       this
     );
 
-    //this.map.setCollisionBetween(1, 200);
-    //this.housesLayer.resizeWorld();
-    //this.housesLayer.debug = true;
+    this.physics.add.collider(
+      this.player,
+      this.monster1,
+      this.dammagePlayer,
+      null,
+      this
+    );
+
+    this.physics.add.collider(
+      this.player,
+      this.monster2,
+      this.dammagePlayer,
+      null,
+      this
+    );
 
     this.cursors = this.input.keyboard.createCursorKeys();
     this.cameras.main.setBounds(
@@ -233,13 +257,6 @@ class Game extends Phaser.Scene {
       this.map.heightInPixels
     );
 
-    this.playerScore = 0;
-    this.scoreText = this.add.text(16, 16, "Score: 0", {
-      fontSize: "16px",
-      fill: "#fff"
-    });
-    this.scoreText.setScrollFactor(0);
-
     // debug
 
     /*this.physics.world.createDebugGraphic();
@@ -257,29 +274,49 @@ class Game extends Phaser.Scene {
   }
 
   talkingEvent() {
-    /*this.talking.scaleX *= 0.95;
-    this.talking.scaleY *= 0.95;
-    this.talking.rotation += 0.04;*/
     this.talking.visible = !this.talking.visible;
   }
 
+  refreshPlayerLife() {
+    this.playerLifeSprites.forEach((heartSprite, index) => {
+      heartSprite.visible = this.playerLife >= index + 1;
+    });
+  }
+
   update(time, delta) {
-    this.playerSpeed = 1.3;
+    this.playerSpeed = 60;
+
+    // Stop any previous movement from the last frame
+    this.player.body.setVelocity(0);
+
     if (this.cursors.left.isDown) {
-      this.player.x -= this.playerSpeed;
+      //this.player.x -= this.playerSpeed;
+      this.player.setVelocityX(-this.playerSpeed);
       this.player.anims.play("spr-hero-walkleft", true);
+
+      //
     } else if (this.cursors.right.isDown) {
-      this.player.x += this.playerSpeed;
+      this.player.setVelocityX(this.playerSpeed);
+      //this.player.x += this.playerSpeed;
       this.player.anims.play("spr-hero-walkright", true);
     }
 
     if (this.cursors.down.isDown) {
-      this.player.y += this.playerSpeed;
+      //this.player.y += this.playerSpeed;
+      this.player.setVelocityY(this.playerSpeed);
       this.player.anims.play("spr-hero-walkdown", true);
     } else if (this.cursors.up.isDown) {
-      this.player.y -= this.playerSpeed;
+      //this.player.y -= this.playerSpeed;
+      this.player.setVelocityY(-this.playerSpeed);
       this.player.anims.play("spr-hero-walkup", true);
     }
+
+    // Normalize and scale the velocity so that player can't move faster along a diagonal
+    this.player.body.velocity.normalize().scale(this.playerSpeed);
+
+    //this.physics.world.collide(this.player, this.monster1);
+    //this.physics.world.collide(this.player, this.oldman, () => console.log('touch callback'));
+
     this.cameraDolly.x = Math.floor(this.player.x);
     this.cameraDolly.y = Math.floor(this.player.y);
   }
@@ -304,12 +341,73 @@ class Game extends Phaser.Scene {
     }
   }
 
-  render() {
-    /*const debugGraphics = this.add.graphics().setAlpha(0.75);
-    this.backgroundLayer.renderDebug(debugGraphics, {
-      tileColor: null, // Color of non-colliding tiles
-      collidingTileColor: new Phaser.Display.Color(243, 134, 48, 255), // Color of colliding tiles
-      faceColor: new Phaser.Display.Color(40, 39, 37, 255) // Color of colliding face edges
-    });*/
+  /**
+   * collectHeart - increase player life
+   *
+   * @param  {type} player description
+   * @param  {type} heart  description
+   * @return {type}        description
+   */
+  collectHeart(player, heart) {
+    this.playerLife++;
+    this.refreshPlayerLife();
+    heart.disableBody(true, true);
+  }
+
+  dammagePlayer(player, enemy) {
+    if (player.immune) return;
+
+    player.immune = true;
+
+    // play hurt animations
+    player.setTint(0xff0000);
+    player.setBounce(1, 1);
+    this.playerLife--;
+    this.refreshPlayerLife();
+    if (this.playerLife <= 0) {
+      this.scene.start("GameOver");
+    }
+
+    // Knocks back enemy after colliding
+    if (enemy.body.touching.left) {
+      enemy.body.velocity.x = 150;
+    } else if (enemy.body.touching.right) {
+      enemy.body.velocity.x = -150;
+    } else if (enemy.body.touching.up) {
+      enemy.body.velocity.y = 150;
+    } else if (enemy.body.touching.down) {
+      enemy.body.velocity.y = -150;
+    }
+
+    if (player.body.touching.left) {
+      player.body.velocity.x = 150;
+    } else if (player.body.touching.right) {
+      player.body.velocity.x = -150;
+    } else if (player.body.touching.up) {
+      player.body.velocity.y = 150;
+    } else if (player.body.touching.down) {
+      player.body.velocity.y = -150;
+    }
+
+    // Makes the player immune for 0.5 second and then resets it
+
+    this.time.addEvent({
+      delay: 150,
+      callback: () => {
+        enemy.body.setVelocity(0);
+        player.clearTint();
+      },
+      callbackScope: this,
+      repeat: 0
+    });
+
+    this.time.addEvent({
+      delay: 500,
+      callback: () => {
+        player.immune = false;
+      },
+      callbackScope: this,
+      repeat: 0
+    });
   }
 }
