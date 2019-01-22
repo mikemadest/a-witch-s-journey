@@ -63,6 +63,7 @@ class Intro extends Menu {
 
     if (index < this.storySteps.length - 1) {
       this.waitInputToContinue(() => {
+        this.waitInputToContinue(false);
         tween.stop();
         text.setAlpha(0);
         this.displayIntroText(++index);
@@ -72,29 +73,19 @@ class Intro extends Menu {
     }
   }
 
-  waitInputToContinue(callback) {
-    this.input.on("pointerup", callback, this);
-    function handleKeyUp(e) {
-      switch (e.code) {
-        case "Enter":
-          callback();
-          break;
-      }
-    }
-    this.input.keyboard.on("keyup", handleKeyUp, this);
-  }
 
   /**
    * goPlay - launch next scene
    */
   goPlay() {
+    this.waitInputToContinue(false);
     this.tweens.add({
       targets: this.bgImage,
       alpha: 0,
-      duration: 2000,
+      duration: 1500,
       ease: "Cubic",
       easeParams: [1, 1],
-      delay: 200,
+      delay: 0,
       onComplete: () => {
         this.menuMusic.stop();
         this.scene.start("Game");

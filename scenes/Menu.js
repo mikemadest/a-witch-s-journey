@@ -27,9 +27,6 @@ class Menu extends Phaser.Scene {
       0.5
     );
 
-    //[x] [, y] [, color] [, blur] [, shadowStroke] [, shadowFill]
-    //this.title.obj.setShadow(1, 1, '0x000000', 1);
-
     this.title.obj.setAlpha(0);
     this.tweens.add({
       targets: this.title.obj,
@@ -105,6 +102,11 @@ class Menu extends Phaser.Scene {
   }
 
   waitInputToContinue(callback) {
+    if (typeof callback !== 'function') {
+      this.input.off("pointerup");
+      this.input.keyboard.off("keyup");
+      return;
+    }
     this.input.on("pointerup", callback, this);
     function handleKeyUp(e) {
       switch (e.code) {
