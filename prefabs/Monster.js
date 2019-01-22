@@ -9,7 +9,9 @@ class Monster extends Entity {
   }
 
   create() {
-    return super.create();
+    this.spr = super.create();
+    this.spr = this.spr[0];
+    return this.spr;
   }
 
   update() {}

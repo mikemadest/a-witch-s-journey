@@ -36,8 +36,9 @@ class Entity {
       spriteKey
     );
 
+    this.ctx.physics.world.enable(tmp);
     tmp.enableBody();
-    tmp.body.bounce.setTo(0.9, 0.9);
+    tmp.body.bounce.setTo(1, 1);
     tmp.setCollideWorldBounds(true);
     tmp.onWorldBounds = true;
     tmp.setOrigin(0);
