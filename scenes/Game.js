@@ -63,8 +63,26 @@ class Game extends Phaser.Scene {
     );
 
     this.handleCollisions();
-
     this.showQuest();
+
+    
+    const fireball = this.physics.add.sprite(
+      0,
+      0,
+      "worldAnim",
+      "fireball-1"
+    ).setScale(0.25,0.25).setActive(false);
+    fireball.enableBody();
+
+    // just an experiment
+    this.input.keyboard.on('keydown_SPACE', (event) => {
+        fireball.setActive(true).setPosition(this.creatures["player"].spr.x, this.creatures["player"].spr.y);
+        fireball.anims.play("spr-fireball", true);
+        fireball.setVelocityX(200);
+    });
+
+
+
 
     // debug
     // this.showDebugInfos();
@@ -172,7 +190,7 @@ class Game extends Phaser.Scene {
    * @return {type}          description
    */
   waitInputToContinue(callback) {
-    if (typeof callback !== 'function') {
+    if (typeof callback !== "function") {
       this.input.off("pointerup");
       this.input.keyboard.off("keyup");
       return;
@@ -347,7 +365,7 @@ class Game extends Phaser.Scene {
     this.fountain = this.fountainEntity.create()[0];
     this.fountain.body.immovable = true;
 
-    this.waterfallEntity = new Entity(
+    /*this.waterfallEntity = new Entity(
       this,
       this.map,
       "waterfallAnim",
@@ -365,7 +383,7 @@ class Game extends Phaser.Scene {
       "waterfall-b-1",
       "spr-waterfall-b"
     );
-    this.waterfall = this.waterfallEntity.create()[0];
+    this.waterfall = this.waterfallEntity.create()[0];*/
 
     // little bubble to attract attention, may add an "Expression" entity later
     this.talkingEntity = new Entity(
