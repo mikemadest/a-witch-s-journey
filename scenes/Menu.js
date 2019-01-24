@@ -122,6 +122,6 @@ class Menu extends Phaser.Scene {
    * goPlay - launch next scene
    */
   goPlay() {
-    this.scene.start("Intro", { music: this.menuMusic });
+    this.scene.start("Game", { music: this.menuMusic });
   }
 }

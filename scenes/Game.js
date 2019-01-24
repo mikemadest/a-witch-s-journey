@@ -65,21 +65,47 @@ class Game extends Phaser.Scene {
     this.handleCollisions();
     this.showQuest();
 
-    
-    const fireball = this.physics.add.sprite(
-      0,
-      0,
-      "worldAnim",
-      "fireball-1"
-    ).setScale(0.25,0.25).setActive(false);
-    fireball.enableBody();
 
-    // just an experiment
+
+    // just an experiment, pretty sure there's a better way...
     this.input.keyboard.on('keydown_SPACE', (event) => {
-        fireball.setActive(true).setPosition(this.creatures["player"].spr.x, this.creatures["player"].spr.y);
-        fireball.anims.play("spr-fireball", true);
-        fireball.setVelocityX(200);
+      const frameName = this.creatures["player"].spr.frame.name;
+      const fireball = this.physics.add.sprite(
+        0,
+        0,
+        "worldAnim",
+        "fireball-1"
+      ).setScale(0.25,0.25).setVelocity(0);
+
+      const x = this.creatures["player"].spr.x;
+      const y = this.creatures["player"].spr.y;
+      if (frameName.indexOf('walkup') >= 0) {
+        fireball.setPosition(x + 10, y - 5).setVelocityY(-200);
+
+      } else if (frameName.indexOf('walkdown') >= 0) {
+        fireball.setPosition(x + 10, y + 25).setVelocityY(200);
+
+      } else if (frameName.indexOf('walkleft') >= 0) {
+        fireball.setPosition(x - 5, y + 10).setVelocityX(-200);
+
+      } else if (frameName.indexOf('walkright') >= 0) {
+        fireball.setPosition(x + 20, y + 10).setVelocityX(200);
+      }
+      fireball.enableBody();
+      fireball.body.setCollideWorldBounds(true); // Hero collides with the bounds of the screen
+      fireball.body.onWorldBounds = true;
+      fireball.anims.play("spr-fireball", true);
     });
+
+
+
+
+    this.physics.world.on('worldbounds', function(body){
+      var ball = body.gameObject;
+      if (ball.frame.name.indexOf('fireball') >= 0) {
+        ball.destroy();
+      }
+    });﻿
 
 
 

@@ -61,7 +61,7 @@ class Preload extends Phaser.Scene {
    */
   createBackground() {
     this.bg = this.add.graphics({ x: 0, y: 0 });
-    this.bg.fillStyle("0xF4CCA1", 1);
+    this.bg.fillStyle("0x476565", 1);
     this.bg.fillRect(0, 0, this.CONFIG.width, this.CONFIG.height);
   }
 
@@ -132,7 +132,7 @@ class Preload extends Phaser.Scene {
     this.progress.fillRect(0, 0, w * val, h);
 
     this.border.clear();
-    this.border.lineStyle(4, "0x4D6592", 1);
+    this.border.lineStyle(4, "0x0e1a1a", 1);
     this.border.strokeRect(0, 0, w * val, h);
 
     // Percentage in progress text
