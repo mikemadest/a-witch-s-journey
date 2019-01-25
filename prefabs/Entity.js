@@ -30,6 +30,7 @@ class Entity {
     if (typeof this.spawnName === "object") {
       this.spawnName = [this.spawnName];
     }
+    //const spawnPoint = this.map.findObject("objects", obj => obj.type === this.spawnName);
     const spawnSearch = this.findObjectsByType(this.spawnName, this.map);
     const entities = [];
     spawnSearch.forEach(entity => {

@@ -21,8 +21,7 @@ class Game extends Phaser.Scene {
     // main tile map
     this.map = this.add.tilemap("level1");
     const backgroundTile = this.map.addTilesetImage("overworld", "gameTile");
-    //const objectsTile = this.map.addTilesetImage("objects", "objectsTile");
-
+    const objectsTile = this.map.addTilesetImage("objects", "objectsTile");
     //const objectsLayer = this.map.createStaticLayer("objects", objectsTile);
     this.staticLayers = {};
     ["background", "details", "details2", "deco", "houses"].forEach(
@@ -363,29 +362,10 @@ class Game extends Phaser.Scene {
       this.creatures[config.name] = { entity: entity, spr: entity.create() };
     });
 
-    // coins : this is for the quest, can probably improve that later...
-    this.coins = this.physics.add.group();
-    this.coins.enableBody = true;
-    this.coinEntity = new Entity(
-      this,
-      this.map,
-      "coin",
-      "worldAnim",
-      "coin-1",
-      "spr-coin"
-    );
-    this.coinEntity.create().forEach(coin => this.coins.add(coin));
-
-    //this.coins = this.physics.add.group();
-    //this.coins.enableBody = true;
-    //const coins = this.map.createFromObjects('objects', 1576, { key: 'coin' });
-    //this.anims.play("spr-coin", coins);
-    //coins.forEach(coin => { coin.enableBody(); this.coins.add(coin) });
-    //this.coins.enableBody = true;
-    //this.physics.world.enable(this.coins);
-    //tmp.enableBody();
-
-
+    // coins : this is for the quest, will move to quest manager
+    this.coins = this.map.createFromObjects('objects', 1576, { key: 'worldAnim', frame: "coin-1" });
+    this.coins.forEach(c => this.physics.add.existing(c)); // add physics
+    this.anims.play("spr-coin", this.coins);
 
   }
 
@@ -452,9 +432,11 @@ class Game extends Phaser.Scene {
    * @return {type}        description
    */
   collectCoin(player, coin) {
+    //console.log('player = ', player);
+    //console.log('coin = ', coin);
+    //return false;
 
-
-    coin.disableBody(true, true);
+    coin.destroy();
     this.sound.play("coin");
     this.questRemainingCoins--;
     this.creatures["player"].entity.addScore(1);
