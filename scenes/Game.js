@@ -21,6 +21,9 @@ class Game extends Phaser.Scene {
     // main tile map
     this.map = this.add.tilemap("level1");
     const backgroundTile = this.map.addTilesetImage("overworld", "gameTile");
+    //const objectsTile = this.map.addTilesetImage("objects", "objectsTile");
+
+    //const objectsLayer = this.map.createStaticLayer("objects", objectsTile);
     this.staticLayers = {};
     ["background", "details", "details2", "deco", "houses"].forEach(
       layerName =>
@@ -372,6 +375,18 @@ class Game extends Phaser.Scene {
       "spr-coin"
     );
     this.coinEntity.create().forEach(coin => this.coins.add(coin));
+
+    //this.coins = this.physics.add.group();
+    //this.coins.enableBody = true;
+    //const coins = this.map.createFromObjects('objects', 1576, { key: 'coin' });
+    //this.anims.play("spr-coin", coins);
+    //coins.forEach(coin => { coin.enableBody(); this.coins.add(coin) });
+    //this.coins.enableBody = true;
+    //this.physics.world.enable(this.coins);
+    //tmp.enableBody();
+
+
+
   }
 
   /**
@@ -437,6 +452,8 @@ class Game extends Phaser.Scene {
    * @return {type}        description
    */
   collectCoin(player, coin) {
+
+
     coin.disableBody(true, true);
     this.sound.play("coin");
     this.questRemainingCoins--;
