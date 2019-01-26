@@ -22,12 +22,14 @@ class Preload extends Phaser.Scene {
   preload() {
     this.createBackground();
     this.createLoadingBar();
-    this.preloadData = this.cache.json.get('preloadData');
+    this.preloadData = this.cache.json.get("preloadData");
 
     // spritesheets
     this.load.setPath(this.URL);
-    this.preloadData["images"].forEach(item => this.load.image(item[0], item[1]));
-    this.load.tilemapTiledJSON("level1", "assets/tilemap/level1.json");
+    this.preloadData["images"].forEach(item =>
+      this.load.image(item[0], item[1])
+    );
+    this.load.tilemapTiledJSON("level1", "assets/tilemap/zone1.json");
 
     this.load.atlas(
       "worldAnim",
@@ -36,11 +38,12 @@ class Preload extends Phaser.Scene {
       Phaser.Loader.TEXTURE_ATLAS_JSON_HASH
     );
 
-    this.load.json('spritesData', 'data/sprites.json');
+    this.load.json("spritesData", "data/sprites.json");
     //this.load.bitmapFont("dialogueFont", "assets/fonts/good_neighbors.png");
 
-    this.preloadData["audio"].forEach(item => this.load.audio(item[0], item[1]));
-
+    this.preloadData["audio"].forEach(item =>
+      this.load.audio(item[0], item[1])
+    );
   }
 
   /**
@@ -61,7 +64,7 @@ class Preload extends Phaser.Scene {
    */
   createBackground() {
     this.bg = this.add.graphics({ x: 0, y: 0 });
-    this.bg.fillStyle("0xF4CCA1", 1);
+    this.bg.fillStyle("0x476565", 1);
     this.bg.fillRect(0, 0, this.CONFIG.width, this.CONFIG.height);
   }
 
@@ -132,7 +135,7 @@ class Preload extends Phaser.Scene {
     this.progress.fillRect(0, 0, w * val, h);
 
     this.border.clear();
-    this.border.lineStyle(4, "0x4D6592", 1);
+    this.border.lineStyle(4, "0x0e1a1a", 1);
     this.border.strokeRect(0, 0, w * val, h);
 
     // Percentage in progress text

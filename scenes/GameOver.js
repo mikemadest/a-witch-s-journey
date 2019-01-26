@@ -13,13 +13,13 @@ class GameOver extends Phaser.Scene {
 
   create() {
     this.createBackground();
-    this.textsData = this.cache.json.get('textsData');
+    this.textsData = this.cache.json.get("textsData");
 
     this.title = new Text(
       this,
       this.CONFIG.centerX,
       50,
-      this.textsData['GAME_OVER'],
+      this.textsData["GAME_OVER"],
       24,
       0.5
     );
@@ -28,7 +28,7 @@ class GameOver extends Phaser.Scene {
       this,
       this.CONFIG.centerX,
       this.CONFIG.centerY + 100,
-      this.textsData['GAME_OVER_RESTART'],
+      this.textsData["GAME_OVER_RESTART"],
       16,
       { x: 0.5, y: 1 }
     );
@@ -39,7 +39,7 @@ class GameOver extends Phaser.Scene {
 
   createBackground() {
     this.bg = this.add.graphics({ x: 0, y: 0 });
-    this.bg.fillStyle("0xffffff", 1);
+    this.bg.fillStyle("0x000000", 1);
     this.bg.fillRect(0, 0, this.CONFIG.width, this.CONFIG.height);
   }
 

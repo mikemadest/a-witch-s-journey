@@ -14,6 +14,12 @@ class Menu extends Phaser.Scene {
     this.CONFIG = this.sys.game.CONFIG;
   }
 
+  /**
+   * Create title screen background, text and animations
+   *
+   *
+   * @return {type}  description
+   */
   create() {
     this.createBackground();
     this.textsData = this.cache.json.get("textsData");
@@ -53,7 +59,13 @@ class Menu extends Phaser.Scene {
     this.waitInputToContinue(this.goPlay);
   }
 
+  /**
+   * Title screen image
+   *
+   * @return {type}  description
+   */
   createBackground() {
+    // the colored background is used for fading effects
     this.bg = this.add.graphics({ x: 0, y: 0 });
     this.bg.fillStyle("0x000000", 1);
     this.bg.fillRect(0, 0, this.CONFIG.width, this.CONFIG.height);
@@ -64,6 +76,13 @@ class Menu extends Phaser.Scene {
       .setOrigin(0, 0);
   }
 
+  /**
+   * Print text on title screen, used also for intro
+   *
+   * @param  {type} delay    description
+   * @param  {type} textCode description
+   * @return {type}          description
+   */
   showStartText(delay, textCode) {
     if (!textCode) {
       textCode = "GAME_START";
@@ -101,20 +120,26 @@ class Menu extends Phaser.Scene {
     }
   }
 
+  /**
+   * Handle basic pointer / keyboard events for going to next scene
+   *
+   * @param  {type} callback description
+   * @return {type}          description
+   */
   waitInputToContinue(callback) {
-    if (typeof callback !== 'function') {
+    if (typeof callback !== "function") {
       this.input.off("pointerup");
       this.input.keyboard.off("keyup");
       return;
     }
     this.input.on("pointerup", callback, this);
-    function handleKeyUp(e) {
+    const handleKeyUp = e => {
       switch (e.code) {
         case "Enter":
-          callback();
+          callback.call(this);
           break;
       }
-    }
+    };
     this.input.keyboard.on("keyup", handleKeyUp, this);
   }
 

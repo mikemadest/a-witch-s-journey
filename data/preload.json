@@ -6,9 +6,9 @@
   ],
 
   "audio": [
-    ["intro", "assets/audio/intro.wav"],
+    ["intro", "assets/audio/intro.ogg"],
     ["ambiance", "assets/audio/ambiance.mp3"],
-    ["fireball", "assets/audio/fireball.wav"],
+    ["fireball", "assets/audio/fireball.ogg"],
     ["damage", "assets/audio/damage.ogg"],
     ["coin", "assets/audio/handleCoins.ogg"]
   ],
@@ -17,6 +17,7 @@
     ["coin", { "start": 1, "end": 4 }],
     ["aryl", { "start": 1, "end": 4 }],
     ["talking", { "start": 1, "end": 4 }],
+    ["fireball", { "start": 1, "end": 9 }],
     ["hero-walkdown", { "start": 1, "end": 4 }],
     ["hero-walkup", { "start": 1, "end": 4 }],
     ["hero-walkleft", { "start": 1, "end": 4 }],

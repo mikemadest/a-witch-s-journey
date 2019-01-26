@@ -2,6 +2,8 @@
  * Player class
  *
  * handle creation, control, status
+ *
+ * @todo extends sprite or decorator ?
  */
 class Monster extends Entity {
   constructor(ctx, map, spawnName, spriteCache, spriteKey, animName) {
@@ -10,7 +12,9 @@ class Monster extends Entity {
 
   create() {
     this.spr = super.create();
-    this.spr = this.spr[0];
+    this.spr.map(m => {
+      m.life = 3;
+    });
     return this.spr;
   }
 
@@ -20,13 +24,7 @@ class Monster extends Entity {
 
   move() {}
 
-  bumped() {}
-
   refreshLife() {}
-
-  takeDamage() {
-    //
-  }
 
   getHealing() {
     //

@@ -7,6 +7,16 @@ Destroy the monsters attaking the village, get him back !
 ----------------------
 ## Log
 
+
+### Version 0.06
+- hitting enemy and destroying them
+- fireball spell !
+- items for quest appears only after taking the quest
+- When you complete the quest, the fireball attack will be available !
+- Map and collisions have been revamped and improved
+
+----------------------
+
 ### Version 0.05
 - giving the coins to the old man
 - getting the magic staff
@@ -52,22 +62,14 @@ New entities and animations :
 
 ----------------------
 
-## COMING NEXT (subject to change)) :
-
-### Version 0.06
-- hitting enemy and destroying them
-- enemy down animation / explosion
-- fireball spell !
-
-----------------------
-
-### Version 0.07
-- moving monster in the forest
-- pirate attacks ?
-
-----------------------
-## Future features :
-- Monster basic AI, attack when the player is close, move arround
-- monster spawn
+## BACKLOG
+- enemy down animation
+- animated tiles
+- fireball explode on contact
+- monsters movements
 - bridge boss attacks and script
+- code refactoring : quest module, modal management, events managements
+- Webpack
+- Monster basic AI, attack when the player is close, move arround
+- monster dynamic spawn (boss effect, story)
 - killing the bridge boss allow access to the next zone (demo ending).

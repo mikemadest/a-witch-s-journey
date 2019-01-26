@@ -17,7 +17,6 @@ class Text {
     this.obj = this.createText();
   }
 
-
   initOrigin(origin) {
     if (typeof origin === "number") {
       return {
