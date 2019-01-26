@@ -31,8 +31,9 @@
   {
     "name": "monster1",
     "type": "monster",
-    "spawn": "monster1Spawn",
+    "spawn": "monsterSpawn",
     "frame": "log-walkdown-1",
+    "animation": "spr-log-walkdown",
     "ai": {
       "patrol": []
     },
@@ -41,7 +42,7 @@
   {
     "name": "boss",
     "type": "boss",
-    "spawn": "monster2Spawn",
+    "spawn": "bossSpawn",
     "frame": "pirate-stand-1",
     "animation": "spr-pirate-stand",
     "ai": {

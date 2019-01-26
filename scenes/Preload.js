@@ -22,12 +22,14 @@ class Preload extends Phaser.Scene {
   preload() {
     this.createBackground();
     this.createLoadingBar();
-    this.preloadData = this.cache.json.get('preloadData');
+    this.preloadData = this.cache.json.get("preloadData");
 
     // spritesheets
     this.load.setPath(this.URL);
-    this.preloadData["images"].forEach(item => this.load.image(item[0], item[1]));
-    this.load.tilemapTiledJSON("level1", "assets/tilemap/level1.json");
+    this.preloadData["images"].forEach(item =>
+      this.load.image(item[0], item[1])
+    );
+    this.load.tilemapTiledJSON("level1", "assets/tilemap/zone1.json");
 
     this.load.atlas(
       "worldAnim",
@@ -36,11 +38,12 @@ class Preload extends Phaser.Scene {
       Phaser.Loader.TEXTURE_ATLAS_JSON_HASH
     );
 
-    this.load.json('spritesData', 'data/sprites.json');
+    this.load.json("spritesData", "data/sprites.json");
     //this.load.bitmapFont("dialogueFont", "assets/fonts/good_neighbors.png");
 
-    this.preloadData["audio"].forEach(item => this.load.audio(item[0], item[1]));
-
+    this.preloadData["audio"].forEach(item =>
+      this.load.audio(item[0], item[1])
+    );
   }
 
   /**

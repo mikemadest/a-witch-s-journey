@@ -1,3 +1,7 @@
+//
+// Next : going node and webpack...
+// import AnimatedTiles from "../libs/Plugins/AnimatedTiles.min.js";
+
 /**
  * Just a short game level :
  * find all coins, buy the staff and defeat monsters !
@@ -11,6 +15,15 @@ class Game extends Phaser.Scene {
     this.CONFIG = this.sys.game.CONFIG;
   }
 
+  /*preload() {
+    this.load.scenePlugin(
+      "animatedTiles",
+      AnimatedTiles,
+      "animatedTiles",
+      "animatedTiles"
+    );
+  }*/
+
   /**
    * Create level, place living beings and items
    */
@@ -18,15 +31,26 @@ class Game extends Phaser.Scene {
     this.spritesData = this.cache.json.get("spritesData");
     this.textsData = this.cache.json.get("textsData");
 
+    // just to get it working quickly before having a real spell system
+    this.playerHasMagicStaff = false;
+
     // main tile map
+    this.layers = {};
     this.map = this.add.tilemap("level1");
     const backgroundTile = this.map.addTilesetImage("overworld", "gameTile");
     const objectsTile = this.map.addTilesetImage("objects", "objectsTile");
     //const objectsLayer = this.map.createStaticLayer("objects", objectsTile);
-    this.staticLayers = {};
-    ["background", "details", "details2", "deco", "houses"].forEach(
+    //this.layers['belowLayer'] = this.map.createDynamicLayer('belowLayer', backgroundTile, 0, 0);
+
+    [
+      "belowLayer",
+      "worldLayer",
+      "belowdetails",
+      "detailObstacles",
+      "aboveLayer"
+    ].forEach(
       layerName =>
-        (this.staticLayers[layerName] = this.map.createStaticLayer(
+        (this.layers[layerName] = this.map.createStaticLayer(
           layerName,
           backgroundTile,
           0,
@@ -34,9 +58,10 @@ class Game extends Phaser.Scene {
         ))
     );
 
-    this.questRemainingCoins = 1;
-    this.questRequiredCoins = 1;
-    this.questEnded = false;
+    this.layers["aboveLayer"].setDepth(1);
+
+    //this.sys.animatedTiles.init(map);
+
     this.createWorldAnimations();
     this.createWorldInhabitants();
 
@@ -45,6 +70,9 @@ class Game extends Phaser.Scene {
     this.gameMusic.play();
 
     this.cursors = this.input.keyboard.createCursorKeys();
+
+    // placing camera : we use a dolly to round position
+    // and avoid artefacts when moving
     this.cameras.main.setBounds(
       0,
       0,
@@ -64,58 +92,56 @@ class Game extends Phaser.Scene {
       this.map.heightInPixels
     );
 
+    // just an experiment, pretty sure there's a better way...
+    this.fireballs = this.physics.add.group();
+    this.physics.add.collider(
+      this.fireballs,
+      this.layers["detailObstacles"],
+      fireball => this.explodeOnContact(fireball)
+    );
+    this.physics.add.collider(
+      this.fireballs,
+      this.layers["worldLayer"],
+      fireball => this.explodeOnContact(fireball)
+    );
+
     this.handleCollisions();
     this.showQuest();
 
+    this.input.keyboard.on("keydown_SPACE", () => this.throwFireball());
 
-
-    // just an experiment, pretty sure there's a better way...
-    this.input.keyboard.on('keydown_SPACE', (event) => {
-      const frameName = this.creatures["player"].spr.frame.name;
-      const fireball = this.physics.add.sprite(
-        0,
-        0,
-        "worldAnim",
-        "fireball-1"
-      ).setScale(0.25,0.25).setVelocity(0);
-
-      const x = this.creatures["player"].spr.x;
-      const y = this.creatures["player"].spr.y;
-      if (frameName.indexOf('walkup') >= 0) {
-        fireball.setPosition(x + 10, y - 5).setVelocityY(-200);
-
-      } else if (frameName.indexOf('walkdown') >= 0) {
-        fireball.setPosition(x + 10, y + 25).setVelocityY(200);
-
-      } else if (frameName.indexOf('walkleft') >= 0) {
-        fireball.setPosition(x - 5, y + 10).setVelocityX(-200);
-
-      } else if (frameName.indexOf('walkright') >= 0) {
-        fireball.setPosition(x + 20, y + 10).setVelocityX(200);
-      }
-      fireball.enableBody();
-      fireball.body.setCollideWorldBounds(true); // Hero collides with the bounds of the screen
-      fireball.body.onWorldBounds = true;
-      fireball.anims.play("spr-fireball", true);
-    });
-
-
-
-
-    this.physics.world.on('worldbounds', function(body){
+    this.physics.world.on("worldbounds", function(body) {
       var ball = body.gameObject;
-      if (ball.frame.name.indexOf('fireball') >= 0) {
+      if (ball.frame.name.indexOf("fireball") >= 0) {
         ball.destroy();
       }
-    });﻿
-
-
-
-
+    });
     // debug
-    // this.showDebugInfos();
+    //this.showDebugInfos();
   }
 
+  /**
+   * Refresh player movement, camera and monsters
+   *
+   * @param time
+   * @param delta
+   */
+  update(time, delta) {
+    this.creatures["player"].entity.update();
+    this.cameraDolly.x = Math.floor(this.creatures["player"].spr.x);
+    this.cameraDolly.y = Math.floor(this.creatures["player"].spr.y);
+  }
+
+
+  /**
+   * Create a basic modal for text displaing
+   *
+   * @param  {type} text  description
+   * @param  {type} x     description
+   * @param  {type} y     description
+   * @param  {type} width description
+   * @return {type}       description
+   */
   createModal(text, x, y, width) {
     const lineCount = text.split("\n").length;
     const textSize = 20 * lineCount;
@@ -131,12 +157,18 @@ class Game extends Phaser.Scene {
     const boxBg = this.add.graphics({ x: x, y: y });
     boxBg.clear().setScrollFactor(0);
     boxBg.fillStyle("0xFFFFFF", 1);
-    boxBg.fillRect(0, 0, w, h).setAlpha(0);
+    boxBg
+      .fillRect(0, 0, w, h)
+      .setAlpha(0)
+      .setDepth(10);
 
     const boxBorder = this.add.graphics({ x: x, y: y });
     boxBorder.clear().setScrollFactor(0);
     boxBorder.lineStyle(4, "0x4D6592", 1);
-    boxBorder.strokeRect(0, 0, w, h).setAlpha(0);
+    boxBorder
+      .strokeRect(0, 0, w, h)
+      .setAlpha(0)
+      .setDepth(10);
 
     const questText = this.add
       .text(x + padding, y + padding, text, {
@@ -147,11 +179,18 @@ class Game extends Phaser.Scene {
       .setLineSpacing(3)
       .setOrigin(0)
       .setScrollFactor(0)
-      .setAlpha(0);
+      .setAlpha(0)
+      .setDepth(10);
 
     return [questText, boxBg, boxBorder];
   }
 
+
+  /**
+   * Show quest modal : description, goal
+   *
+   * @return {type}  description
+   */
   showQuest() {
     const modalElements = this.createModal(this.textsData["QUEST_1"]);
     const tween = this.tweens.add({
@@ -164,6 +203,7 @@ class Game extends Phaser.Scene {
 
     this.waitInputToContinue(() => {
       this.waitInputToContinue(false);
+      this.startQuest();
       tween.stop();
       this.tweens.add({
         targets: modalElements,
@@ -179,6 +219,37 @@ class Game extends Phaser.Scene {
     });
   }
 
+  /**
+   * init items and goal infos
+   **/
+  startQuest() {
+    this.questRemainingCoins = 6;
+    this.questRequiredCoins = 6;
+    this.questEnded = false;
+
+    // coins : this is for the quest, will move to quest manager
+    this.coins = this.map.createFromObjects("objects", 1576, {
+      key: "worldAnim",
+      frame: "coin-1"
+    });
+    this.coins.forEach(c => this.physics.add.existing(c)); // add physics
+    this.anims.play("spr-coin", this.coins);
+
+    this.physics.add.overlap(
+      this.creatures["player"].spr,
+      this.coins,
+      this.collectCoin,
+      null,
+      this
+    );
+  }
+
+
+  /**
+   * Display small quest modal for status update
+   *
+   * @return {type}  description
+   */
   showQuestStatus() {
     this.statusModal = this.createModal(
       this.textsData["QUEST_STATUS"] +
@@ -199,16 +270,92 @@ class Game extends Phaser.Scene {
     });
   }
 
+
   /**
-   * Refresh player movement, camera and monsters
+   * Update remaining items in status modal
    *
-   * @param time
-   * @param delta
+   * @return {type}  description
    */
-  update(time, delta) {
-    this.creatures["player"].entity.update();
-    this.cameraDolly.x = Math.floor(this.creatures["player"].spr.x);
-    this.cameraDolly.y = Math.floor(this.creatures["player"].spr.y);
+  updateQuestStatus() {
+    this.statusModal[0].setText(
+      this.textsData["QUEST_STATUS"] +
+        this.questRemainingCoins +
+        "  / " +
+        this.questRequiredCoins
+    );
+  }
+
+
+  /**
+   * collectCoin - action when user overlap a coin
+   *
+   * @param  {type} player description
+   * @param  {type} coin   description
+   * @return {type}        description
+   */
+  collectCoin(player, coin) {
+    coin.destroy();
+    this.sound.play("coin");
+    this.questRemainingCoins--;
+    this.updateQuestStatus();
+    this.creatures["player"].entity.addScore(1);
+
+    // coins obtained ! Quest is over
+    if (this.questRemainingCoins === 0) {
+      this.statusModal[0].setText(this.textsData["QUEST_SUCCESS1"]);
+
+      this.time.addEvent({
+        delay: 2000,
+        callback: () => {
+          this.statusModal[0].setText(this.textsData["QUEST_SUCCESS2"]);
+        },
+        callbackScope: this
+      });
+    }
+  }
+
+  /**
+   * returnQuest - handle quest completion
+   *
+   * @return void
+   */
+  returnQuest() {
+    if (this.questEnded || this.questRemainingCoins > 0) {
+      // should probably display some message !
+      return;
+    }
+
+    this.questEnded = true;
+    this.tweens.add({
+      targets: this.statusModal,
+      alpha: 0,
+      duration: 1000,
+      ease: "Cubic",
+      easeParams: [1, 1],
+      delay: 0
+    });
+
+    const modalElements = this.createModal(this.textsData["QUEST_ENDED"]);
+    const tween = this.tweens.add({
+      targets: modalElements,
+      alpha: 1,
+      duration: 1000,
+      ease: "Cubic",
+      easeParams: [1, 1]
+    });
+
+    this.waitInputToContinue(() => {
+      tween.stop();
+      this.playerHasMagicStaff = true;
+      this.waitInputToContinue(false);
+      this.tweens.add({
+        targets: modalElements,
+        alpha: 0,
+        duration: 900,
+        ease: "Cubic",
+        easeParams: [1, 1]
+      });
+    });
   }
 
   /**
@@ -243,7 +390,12 @@ class Game extends Phaser.Scene {
       .graphics()
       .setAlpha(0.75)
       .setDepth(20);
-    this.backgroundLayer.renderDebug(graphics, {
+    this.layers["worldLayer"].renderDebug(graphics, {
+      tileColor: null, // Color of non-colliding tiles
+      collidingTileColor: new Phaser.Display.Color(243, 134, 48, 255), // Color of colliding tiles
+      faceColor: new Phaser.Display.Color(40, 39, 37, 255) // Color of colliding face edges
+    });
+    this.layers["detailObstacles"].renderDebug(graphics, {
       tileColor: null, // Color of non-colliding tiles
       collidingTileColor: new Phaser.Display.Color(243, 134, 48, 255), // Color of colliding tiles
       faceColor: new Phaser.Display.Color(40, 39, 37, 255) // Color of colliding face edges
@@ -254,15 +406,15 @@ class Game extends Phaser.Scene {
    * Manage collision : creature taking dammage, etc.
    */
   handleCollisions() {
-    this.staticLayers["houses"].setCollisionByExclusion([-1]);
+    this.layers["worldLayer"].setCollisionByExclusion([-1]);
     this.physics.add.collider(
       this.creatures["player"].spr,
-      this.staticLayers["houses"]
+      this.layers["worldLayer"]
     );
-    this.staticLayers["details"].setCollisionByExclusion([-1]);
+    this.layers["detailObstacles"].setCollisionByExclusion([-1]);
     this.physics.add.collider(
       this.creatures["player"].spr,
-      this.staticLayers["details"]
+      this.layers["detailObstacles"]
     );
     this.physics.add.collider(
       this.creatures["player"].spr,
@@ -272,15 +424,6 @@ class Game extends Phaser.Scene {
       this.creatures["player"].spr,
       this.creatures["aryl"].spr
     );
-    this.physics.add.collider(this.creatures["player"].spr, this.fountain);
-
-    this.physics.add.overlap(
-      this.creatures["player"].spr,
-      this.coins,
-      this.collectCoin,
-      null,
-      this
-    );
 
     this.physics.add.collider(
       this.creatures["player"].spr,
@@ -289,6 +432,19 @@ class Game extends Phaser.Scene {
       null,
       this
     );
+
+    this.physics.add.overlap(
+      this.creatures["monster1"].spr,
+      this.fireballs,
+      (monster, fireball) => {
+        fireball.destroy();
+        this.sound.play("damage");
+        this.creatures["monster1"].entity.takeDamage(monster, this.enemyDeath);
+      },
+      null,
+      this
+    );
+
     this.physics.add.collider(
       this.creatures["player"].spr,
       this.creatures["oldman"].spr,
@@ -304,6 +460,78 @@ class Game extends Phaser.Scene {
       null,
       this
     );
+
+    this.physics.add.overlap(
+      this.creatures["boss"].spr,
+      this.fireballs,
+      (boss, fireball) => {
+        fireball.destroy();
+        this.sound.play("damage");
+        this.creatures["boss"].entity.takeDamage(boss, this.enemyDeath);
+      },
+      null,
+      this
+    );
+  }
+
+
+  /**
+   * Will be used for explosion animation
+   *
+   * @param  {type} fireball description
+   * @return {type}          description
+   */
+  explodeOnContact(fireball) {
+    fireball.destroy();
+  }
+
+
+  /**
+   * handle boss, items and all stuff on an enemy's death
+   *
+   * @return {type}  description
+   */
+  enemyDeath() {
+    this.creatures["player"].entity.addScore(10);
+  }
+
+  /**
+   * Create and send a fireball
+   *
+   * @todo fireball should explode on contact
+   * @todo need more spells and mobile support
+   **/
+  throwFireball() {
+    if (!this.playerHasMagicStaff) {
+      return;
+    }
+
+    // create fireball and animate it
+    var fireball = this.fireballs
+      .create(0, 0, "worldAnim", "fireball-1")
+      .setScale(0.25, 0.25)
+      .setVelocity(0);
+    fireball.setCollideWorldBounds(true);
+    fireball.allowGravity = false;
+    fireball.enableBody();
+    fireball.body.setCollideWorldBounds(true);
+    fireball.body.onWorldBounds = true;
+    fireball.anims.play("spr-fireball", true);
+
+    const x = this.creatures["player"].spr.x;
+    const y = this.creatures["player"].spr.y;
+
+    // just use player frame to know where he is facing
+    const frameName = this.creatures["player"].spr.frame.name;
+    if (frameName.indexOf("walkup") >= 0) {
+      fireball.setPosition(x + 10, y - 5).setVelocityY(-200);
+    } else if (frameName.indexOf("walkdown") >= 0) {
+      fireball.setPosition(x + 10, y + 25).setVelocityY(200);
+    } else if (frameName.indexOf("walkleft") >= 0) {
+      fireball.setPosition(x - 5, y + 10).setVelocityX(-200);
+    } else if (frameName.indexOf("walkright") >= 0) {
+      fireball.setPosition(x + 20, y + 10).setVelocityX(200);
+    }
   }
 
   /**
@@ -361,51 +589,14 @@ class Game extends Phaser.Scene {
       const entity = this.getCreature(config);
       this.creatures[config.name] = { entity: entity, spr: entity.create() };
     });
-
-    // coins : this is for the quest, will move to quest manager
-    this.coins = this.map.createFromObjects('objects', 1576, { key: 'worldAnim', frame: "coin-1" });
-    this.coins.forEach(c => this.physics.add.existing(c)); // add physics
-    this.anims.play("spr-coin", this.coins);
-
   }
 
   /**
    * Create sprite for moving decoration like waterfall
    *
-   * Don't know how to better handle level animations YET...
+   * @note : This will be updated to an animated tile map
    */
   createWorldAnimations() {
-    this.fountainEntity = new Entity(
-      this,
-      this.map,
-      "fountainAnim",
-      "worldAnim",
-      "fountain-1",
-      "spr-fountain"
-    );
-    this.fountain = this.fountainEntity.create()[0];
-    this.fountain.body.immovable = true;
-
-    /*this.waterfallEntity = new Entity(
-      this,
-      this.map,
-      "waterfallAnim",
-      "worldAnim",
-      "waterfall-1",
-      "spr-waterfall"
-    );
-    this.waterfall = this.waterfallEntity.create()[0];
-
-    this.waterfallEntity = new Entity(
-      this,
-      this.map,
-      "waterfall-bAnim",
-      "worldAnim",
-      "waterfall-b-1",
-      "spr-waterfall-b"
-    );
-    this.waterfall = this.waterfallEntity.create()[0];*/
-
     // little bubble to attract attention, may add an "Expression" entity later
     this.talkingEntity = new Entity(
       this,
@@ -425,36 +616,6 @@ class Game extends Phaser.Scene {
   }
 
   /**
-   * collectCoin - action when user overlap a coin
-   *
-   * @param  {type} player description
-   * @param  {type} coin   description
-   * @return {type}        description
-   */
-  collectCoin(player, coin) {
-    //console.log('player = ', player);
-    //console.log('coin = ', coin);
-    //return false;
-
-    coin.destroy();
-    this.sound.play("coin");
-    this.questRemainingCoins--;
-    this.creatures["player"].entity.addScore(1);
-    if (this.questRemainingCoins === 0) {
-      // coins obtained ! Quest is over
-      this.statusModal[0].setText(this.textsData["QUEST_SUCCESS1"]);
-
-      this.time.addEvent({
-        delay: 2000,
-        callback: () => {
-          this.statusModal[0].setText(this.textsData["QUEST_SUCCESS2"]);
-        },
-        callbackScope: this
-      });
-    }
-  }
-
-  /**
    * collectHeart - increase player life
    *
    * @param  {type} player description
@@ -466,49 +627,16 @@ class Game extends Phaser.Scene {
     heart.disableBody(true, true);
   }
 
-  returnQuest() {
-    if (!this.questEnded && this.questRemainingCoins === 0) {
-      this.questEnded = true;
-      this.tweens.add({
-        targets: this.statusModal,
-        alpha: 0,
-        duration: 1000,
-        ease: "Cubic",
-        easeParams: [1, 1],
-        delay: 0
-      });
-
-      const modalElements = this.createModal(this.textsData["QUEST_ENDED"]);
-      const tween = this.tweens.add({
-        targets: modalElements,
-        alpha: 1,
-        duration: 1000,
-        ease: "Cubic",
-        easeParams: [1, 1]
-      });
-
-      this.waitInputToContinue(() => {
-        tween.stop();
-        this.waitInputToContinue(false);
-        this.tweens.add({
-          targets: modalElements,
-          alpha: 0,
-          duration: 900,
-          ease: "Cubic",
-          easeParams: [1, 1]
-        });
-      });
-    }
-  }
-
   /**
+   * First damage handling...
    *
    * @param player
    * @param enemy
    */
   dammagePlayer(player, enemy) {
     this.sound.play("damage");
-    this.creatures["player"].entity.takeDamage(() => this.menuMusic.stop());
+    //const player = this.creatures["player"];
+    this.creatures["player"].entity.takeDamage(player);
 
     // Knocks back enemy after colliding
     if (enemy.body.touching.left) {

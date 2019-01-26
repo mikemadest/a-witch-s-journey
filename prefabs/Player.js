@@ -6,20 +6,27 @@
 class Player extends Entity {
   constructor(ctx, map, spawnName, spriteCache, spriteKey, animName) {
     super(ctx, map, spawnName, spriteCache, spriteKey, animName);
-
-    this.playerScore = 0;
-    this.playerLife = 3;
-    this.playerSpeed = 60;
   }
 
+  /**
+   * Initialize player sprite and UI
+   **/
   create() {
     this.spr = super.create();
+    if (!this.spr || !this.spr[0]) {
+      console.error("Player creation was not possible");
+      return {};
+    }
     this.spr = this.spr[0];
+    this.spr.score = 0;
+    this.spr.life = 3;
+    this.spr.speed = 60;
+    this.spr.setSize(16, 12, true);
+    this.spr.body.offset.y = 7;
     this.createLifeBar();
     this.createScoreText();
     return this.spr;
   }
-
 
   /**
    * Refresh player for each frame
@@ -29,53 +36,50 @@ class Player extends Entity {
     this.spr.body.setVelocity(0);
 
     if (this.ctx.cursors.left.isDown) {
-      this.spr.setVelocityX(-this.playerSpeed);
+      this.spr.setVelocityX(-this.spr.speed);
       this.spr.anims.play("spr-hero-walkleft", true);
 
       //
     } else if (this.ctx.cursors.right.isDown) {
-      this.spr.setVelocityX(this.playerSpeed);
+      this.spr.setVelocityX(this.spr.speed);
       this.spr.anims.play("spr-hero-walkright", true);
     }
 
     if (this.ctx.cursors.down.isDown) {
-      this.spr.setVelocityY(this.playerSpeed);
+      this.spr.setVelocityY(this.spr.speed);
       this.spr.anims.play("spr-hero-walkdown", true);
     } else if (this.ctx.cursors.up.isDown) {
-      this.spr.setVelocityY(-this.playerSpeed);
+      this.spr.setVelocityY(-this.spr.speed);
       this.spr.anims.play("spr-hero-walkup", true);
     }
 
     // Normalize and scale the velocity so that player can't move faster along a diagonal
-    this.spr.body.velocity.normalize().scale(this.playerSpeed);
+    this.spr.body.velocity.normalize().scale(this.spr.speed);
   }
 
   attack() {}
 
   move() {}
 
-  bumped() {}
-
-
   /**
    * Add "heart" life bar to UI
    */
   createLifeBar() {
-    const playerLifePos = { x: 12, y: 28 };
-    this.playerLifeSprites = [];
-    for (let i = 0; i < this.playerLife; i++) {
+    const lifePos = { x: 12, y: 28 };
+    this.lifeSprites = [];
+    for (let i = 0; i < this.spr.life; i++) {
       const tmp = this.ctx.physics.add.sprite(
-        playerLifePos.x + i * 20,
-        playerLifePos.y,
+        lifePos.x + i * 20,
+        lifePos.y,
         this.spriteCache,
         "heart-1"
       );
+      tmp.setDepth(10); // UI depth
       tmp.setScrollFactor(0);
       tmp.anims.play("spr-heart", true);
-      this.playerLifeSprites.push(tmp);
+      this.lifeSprites.push(tmp);
     }
   }
-
 
   /**
    * Add score to UI
@@ -87,6 +91,7 @@ class Player extends Entity {
       fontSize: "16px",
       fill: "#fff"
     });
+    this.scoreText.setDepth(10); // UI depth
     this.scoreText.setScrollFactor(0);
   }
 
@@ -95,7 +100,7 @@ class Player extends Entity {
    * @param val int
    */
   addScore(val) {
-    this.playerScore += val;
+    this.spr.score += val;
     this.refreshScore();
   }
 
@@ -103,71 +108,32 @@ class Player extends Entity {
    * Refresh score UI
    */
   refreshScore() {
-    this.scoreText.setText("Score: " + this.playerScore);
+    this.scoreText.setText("Score: " + this.spr.score);
   }
 
   /**
    * Refresh life UI
    */
   refreshLife() {
-    this.playerLifeSprites.forEach((heartSprite, index) => {
-      heartSprite.visible = this.playerLife >= index + 1;
+    this.lifeSprites.forEach((heartSprite, index) => {
+      heartSprite.visible = this.spr.life >= index + 1;
     });
   }
 
-
   /**
-   * Apply damage to user
+   * die - description
    *
-   * display a small animation and decrease life
-   * @param onDeath callback action to use only if the player die
-   *
-   * @todo : improve use of callbacks
+   * @return {type}  description
    */
-  takeDamage(onDeath) {
-    if (this.spr.immune) return;
-    this.spr.immune = true;
-
-    // play hurt animations
-    this.spr.setTint(0xff0000);
-    this.spr.setBounce(1, 1);
-    this.playerLife--;
-    this.refreshLife();
-    if (this.playerLife <= 0) {
-      if (typeof onDeath === 'function') {
-        onDeath();
+  isDead(entity, onDeath) {
+    if (entity.life <= 0) {
+      if (typeof onDeath === "function") {
+        onDeath.call(this.ctx);
       }
       this.ctx.scene.start("GameOver");
+      return true;
     }
-
-    if (this.spr.body.touching.left) {
-      this.spr.body.velocity.x = 150;
-    } else if (this.spr.body.touching.right) {
-      this.spr.body.velocity.x = -150;
-    } else if (this.spr.body.touching.up) {
-      this.spr.body.velocity.y = 150;
-    } else if (this.spr.body.touching.down) {
-      this.spr.body.velocity.y = -150;
-    }
-
-    // Makes the player immune for 0.5 second and then resets it
-    this.ctx.time.addEvent({
-      delay: 150,
-      callback: () => {
-        this.spr.clearTint();
-      },
-      callbackScope: this,
-      repeat: 0
-    });
-
-    this.ctx.time.addEvent({
-      delay: 500,
-      callback: () => {
-        this.spr.immune = false;
-      },
-      callbackScope: this,
-      repeat: 0
-    });
+    return false;
   }
 
   /**
@@ -176,7 +142,7 @@ class Player extends Entity {
    * Include for future features
    */
   getHealing() {
-    this.playerLife++;
+    this.spr.life++;
     this.refreshLife();
   }
 }

@@ -13,6 +13,11 @@ class Intro extends Menu {
     this.CONFIG = this.sys.game.CONFIG;
   }
 
+  /**
+   * Prepare story screen
+   *
+   * @return {type}  description
+   */
   create() {
     this.createBackground();
     this.textsData = this.cache.json.get("textsData");
@@ -33,6 +38,12 @@ class Intro extends Menu {
     this.displayIntroText(0);
   }
 
+  /**
+   * Show story text, one part at a time
+   *
+   * @param  {type} index description
+   * @return {type}       description
+   */
   displayIntroText(index) {
     const text = this.add
       .text(this.CONFIG.centerX, 100, this.storySteps[index], {
@@ -72,7 +83,6 @@ class Intro extends Menu {
       this.waitInputToContinue(this.goPlay);
     }
   }
-
 
   /**
    * goPlay - launch next scene
