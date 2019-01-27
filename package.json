@@ -1,0 +1,42 @@
+{
+  "name": "witch-journey",
+  "version": "1.0.0",
+  "description": "small demo game about a witch trying to save her brother",
+  "author": "Mkms",
+  "main": "index.js",
+  "scripts": {
+    "start": "webpack-dev-server",
+    "build": "webpack",
+    "test": "eslint ./src/**/**.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mikemadest/a-witch-s-journey.git"
+  },
+  "keywords": [
+    "html5",
+    "game",
+    "RPG"
+  ],
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/mikemadest/a-witch-s-journey/issues"
+  },
+  "homepage": "https://github.com/mikemadest/a-witch-s-journey#readme",
+  "dependencies": {
+    "phaser": "^3.15.1",
+    "phaser-animated-tiles": "^2.0.2"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.0.0",
+    "@babel/plugin-proposal-object-rest-spread": "^7.3.1",
+    "@babel/polyfill": "^7.0.0",
+    "@babel/preset-env": "^7.0.0",
+    "babel-loader": "^8.0.5",
+    "clean-webpack-plugin": "^1.0.1",
+    "copy-webpack-plugin": "^4.6.0",
+    "html-webpack-plugin": "^3.2.0",
+    "webpack": "^3.0.0",
+    "webpack-dev-server": "^2.0.0"
+  }
+}
