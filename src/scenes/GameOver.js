@@ -1,9 +1,9 @@
 /**
  *
  **/
-import { Scene } from 'phaser';
+ import BaseScene from "./BaseScene";
 
-class GameOver extends Scene {
+class GameOver extends BaseScene {
   constructor() {
     super({ key: "GameOver", active: false });
   }
@@ -13,6 +13,7 @@ class GameOver extends Scene {
   }
 
   create() {
+    super.create();
     this.createBackground();
     this.textsData = this.cache.json.get("textsData");
 

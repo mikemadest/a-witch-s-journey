@@ -5,9 +5,8 @@
   "author": "Mkms",
   "main": "index.js",
   "scripts": {
+    "start": "webpack-dev-server",
     "build": "webpack",
-    "serv": "webpack-dev-server",
-    "dev": "webpack --mode=development",
     "test": "eslint ./src/**/**.js"
   },
   "repository": {
@@ -33,19 +32,11 @@
     "@babel/plugin-proposal-object-rest-spread": "^7.3.1",
     "@babel/polyfill": "^7.0.0",
     "@babel/preset-env": "^7.0.0",
-    "babel-cli": "^6.26.0",
-    "babel-eslint": "^9.0.0",
     "babel-loader": "^8.0.5",
-    "browser-sync": "^2.24.7",
-    "browser-sync-webpack-plugin": "^2.2.2",
     "clean-webpack-plugin": "^1.0.1",
     "copy-webpack-plugin": "^4.6.0",
-    "eslint": "^5.5.0",
-    "eslint-plugin-import": "^2.14.0",
     "html-webpack-plugin": "^3.2.0",
-    "raw-loader": "^1.0.0",
-    "webpack": "^4.29.0",
-    "webpack-cli": "^3.1.0",
-    "webpack-dev-server": "^3.1.14"
+    "webpack": "^3.0.0",
+    "webpack-dev-server": "^2.0.0"
   }
 }

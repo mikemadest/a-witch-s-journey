@@ -1,21 +1,20 @@
 //
 // Next : going node and webpack...
 // import AnimatedTiles from "../libs/Plugins/AnimatedTiles.min.js";
-import { Scene } from 'phaser';
+import BaseScene from "./BaseScene";
 
-import Entity from '../sprites/Entity';
-import Boss from '../sprites/Boss';
-import Monster from '../sprites/Monster';
-import Player from '../sprites/Player';
-import Pnj from '../sprites/Pnj';
-import AnimatedTiles from 'phaser-animated-tiles/dist/AnimatedTiles.min.js';
-
+import Entity from "../sprites/Entity";
+import Boss from "../sprites/Boss";
+import Monster from "../sprites/Monster";
+import Player from "../sprites/Player";
+import Pnj from "../sprites/Pnj";
+import AnimatedTiles from "phaser-animated-tiles/dist/AnimatedTiles.js";
 
 /**
  * Just a short game level :
  * find all coins, buy the staff and defeat monsters !
  **/
-class Game extends Scene {
+class Game extends BaseScene {
   constructor() {
     super({ key: "Game", active: false });
   }
@@ -25,20 +24,19 @@ class Game extends Scene {
   }
 
   preload() {
-    /*this.load.scenePlugin(
-      "animatedTiles",
+    this.load.scenePlugin(
+      "AnimatedTiles",
       AnimatedTiles,
       "animatedTiles",
       "animatedTiles"
-    );*/
-    console.log('loading AnimatedTiles');
-     this.load.scenePlugin('AnimatedTiles', AnimatedTiles, 'animatedTiles', 'animatedTiles');
+    );
   }
 
   /**
    * Create level, place living beings and items
    */
   create() {
+    super.create();
     this.spritesData = this.cache.json.get("spritesData");
     this.textsData = this.cache.json.get("textsData");
 
@@ -51,29 +49,38 @@ class Game extends Scene {
     const backgroundTile = this.map.addTilesetImage("overworld", "gameTile");
     const objectsTile = this.map.addTilesetImage("objects", "objectsTile");
     //const objectsLayer = this.map.createStaticLayer("objects", objectsTile);
-    this.layers['belowLayer'] = this.map.createDynamicLayer('belowLayer', backgroundTile, 0, 0);
-    this.layers['worldLayer'] = this.map.createDynamicLayer('worldLayer', backgroundTile, 0, 0);
-    this.layers['detailObstacles'] = this.map.createDynamicLayer('detailObstacles', backgroundTile, 0, 0);
-
-    [
-      //"belowLayer",
-      //"worldLayer",
+    this.layers["belowLayer"] = this.map.createDynamicLayer(
+      "belowLayer",
+      backgroundTile,
+      0,
+      0
+    );
+    this.layers["worldLayer"] = this.map.createDynamicLayer(
+      "worldLayer",
+      backgroundTile,
+      0,
+      0
+    );
+    this.layers["detailObstacles"] = this.map.createDynamicLayer(
+      "detailObstacles",
+      backgroundTile,
+      0,
+      0
+    );
+    this.layers["belowdetails"] = this.map.createDynamicLayer(
       "belowdetails",
-      //"detailObstacles",
-      "aboveLayer"
-    ].forEach(
-      layerName =>
-        (this.layers[layerName] = this.map.createStaticLayer(
-          layerName,
-          backgroundTile,
-          0,
-          0
-        ))
+      backgroundTile,
+      0,
+      0
+    );
+    this.layers["aboveLayer"] = this.map.createDynamicLayer(
+      "aboveLayer",
+      backgroundTile,
+      0,
+      0
     );
 
     this.layers["aboveLayer"].setDepth(1);
-
-    console.log('animatedTiles = ', this.sys.animatedTiles);
     this.sys.animatedTiles.init(this.map);
 
     this.createWorldAnimations();
@@ -133,12 +140,12 @@ class Game extends Scene {
     // debug
     //this.showDebugInfos();
 
-      // Add a listener to our resize event
-      //this.sys.game.events.on('resize', this.resize, this);
-      // Call the resize so the game resizes correctly on scene start
-      //this.resize();
-      // Listen for this scene exit
-      this.events.once('shutdown', this.shutdown, this)
+    // Add a listener to our resize event
+    //this.sys.game.events.on('resize', this.resize, this);
+    // Call the resize so the game resizes correctly on scene start
+    //this.resize();
+    // Listen for this scene exit
+    this.events.once("shutdown", this.shutdown, this);
   }
 
   /**
@@ -154,22 +161,10 @@ class Game extends Scene {
   }
 
 
-    resize () {
-        let cam = this.cameras.main;
-        cam.setViewport(0,0,window.innerWidth, window.innerHeight);
-        cam.centerToBounds();
-        // Adjust the zoom such that it scales the game
-        // just enough to clear out the black areas
-        cam.zoom = Math.max(window.innerWidth/400, window.innerHeight/400);
-        // If we want to fit our game inside, then use the min scale
-        // cam.zoom = Math.min(window.innerWidth/270, window.innerHeight/480)
-    }
-
-    shutdown () {
-        // When this scene exits, remove the resize handler
-        this.sys.game.events.off('resize', this.resize, this)
-    }
-
+  shutdown() {
+    // When this scene exits, remove the resize handler
+    this.sys.game.events.off("resize", this.resize, this);
+  }
 
   /**
    * Create a basic modal for text displaing
@@ -222,7 +217,6 @@ class Game extends Scene {
 
     return [questText, boxBg, boxBorder];
   }
-
 
   /**
    * Show quest modal : description, goal
@@ -282,7 +276,6 @@ class Game extends Scene {
     );
   }
 
-
   /**
    * Display small quest modal for status update
    *
@@ -308,7 +301,6 @@ class Game extends Scene {
     });
   }
 
-
   /**
    * Update remaining items in status modal
    *
@@ -322,7 +314,6 @@ class Game extends Scene {
         this.questRequiredCoins
     );
   }
-
 
   /**
    * collectCoin - action when user overlap a coin
@@ -512,7 +503,6 @@ class Game extends Scene {
     );
   }
 
-
   /**
    * Will be used for explosion animation
    *
@@ -522,7 +512,6 @@ class Game extends Scene {
   explodeOnContact(fireball) {
     fireball.destroy();
   }
-
 
   /**
    * handle boss, items and all stuff on an enemy's death

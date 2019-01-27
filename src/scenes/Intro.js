@@ -1,8 +1,8 @@
 /**
  *
  **/
-import Menu from './Menu';
-import Text from '../prefabs/Text';
+import Menu from "./Menu";
+import Text from "../prefabs/Text";
 
 class Intro extends Menu {
   constructor() {
@@ -21,6 +21,12 @@ class Intro extends Menu {
    * @return {type}  description
    */
   create() {
+    // Call the resize so the game resizes correctly on scene start
+    this.sys.game.events.on(
+      "resize",
+      () => this.resizeApp(this.sys.game.CONFIG),
+      this
+    );
     this.createBackground();
     this.textsData = this.cache.json.get("textsData");
     this.add

@@ -1,10 +1,10 @@
 /**
  *
  **/
-import { Scene } from 'phaser';
-import Text from '../prefabs/Text';
+import BaseScene from "./BaseScene";
+import Text from "../prefabs/Text";
 
-class Menu extends Scene {
+class Menu extends BaseScene {
   constructor(params) {
     if (!params) {
       params = { key: "Menu", active: false };
@@ -23,6 +23,7 @@ class Menu extends Scene {
    * @return {type}  description
    */
   create() {
+    super.create();
     this.createBackground();
     this.textsData = this.cache.json.get("textsData");
 

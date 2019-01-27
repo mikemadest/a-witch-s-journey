@@ -2,11 +2,10 @@
  *
  **/
 
-import { Scene } from 'phaser';
-import Text from '../prefabs/Text';
+import BaseScene from "./BaseScene";
+import Text from "../prefabs/Text";
 
-
-class Preload extends Scene {
+class Preload extends BaseScene {
   constructor() {
     super({ key: "Preload", active: false });
   }
@@ -27,7 +26,6 @@ class Preload extends Scene {
     this.createBackground();
     this.createLoadingBar();
     this.preloadData = this.cache.json.get("preloadData");
-
 
     // spritesheets
     this.load.setPath(this.URL);
@@ -55,6 +53,8 @@ class Preload extends Scene {
    *
    */
   create() {
+    super.create();
+
     // create animations
     this.preloadData["anims"].forEach(item =>
       this.createAnims(item[0], "worldAnim", item[1])
