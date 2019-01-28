@@ -18,6 +18,7 @@ export default class Pnj extends Entity {
   create() {
     this.spr = super.create();
     this.spr = this.spr ? this.spr[0] : {};
+    this.spr.setDepth(1);
     this.spr.body.immovable = true;
     return this.spr;
   }

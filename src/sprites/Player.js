@@ -21,6 +21,7 @@ export default class Player extends Entity {
       return {};
     }
     this.spr = this.spr[0];
+    this.spr.setDepth(1);
     this.spr.score = 0;
     this.spr.life = 3;
     this.spr.speed = 60;

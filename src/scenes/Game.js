@@ -61,14 +61,14 @@ class Game extends BaseScene {
       0,
       0
     );
-    this.layers["detailObstacles"] = this.map.createDynamicLayer(
-      "detailObstacles",
+    this.layers["belowdetails"] = this.map.createDynamicLayer(
+      "belowdetails",
       backgroundTile,
       0,
       0
     );
-    this.layers["belowdetails"] = this.map.createDynamicLayer(
-      "belowdetails",
+    this.layers["detailObstacles"] = this.map.createDynamicLayer(
+      "detailObstacles",
       backgroundTile,
       0,
       0
@@ -80,7 +80,13 @@ class Game extends BaseScene {
       0
     );
 
-    this.layers["aboveLayer"].setDepth(1);
+    /*this.layers["belowLayer"].setDepth(1);
+    this.layers["worldLayer"].setDepth(2);
+    this.layers["detailObstacles"].setDepth(3);
+    this.layers["belowdetails"].setDepth(4);*/
+    //this.layers["detailObstacles"].setDepth(1);
+    this.layers["aboveLayer"].setDepth(2);
+
     this.sys.animatedTiles.init(this.map);
 
     this.createWorldAnimations();
@@ -634,6 +640,7 @@ class Game extends BaseScene {
       "spr-talking"
     );
     this.talking = this.talkingEntity.create()[0];
+    this.talking.setDepth(2);
     this.time.addEvent({
       delay: 500,
       callback: () => (this.talking.visible = !this.talking.visible),
