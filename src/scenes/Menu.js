@@ -73,6 +73,7 @@ class Menu extends BaseScene {
     this.bg.fillStyle("0x000000", 1);
     this.bg.fillRect(0, 0, this.CONFIG.width, this.CONFIG.height);
 
+    // @todo : fill the screen / keep ratio
     this.bgImage = this.physics.add
       .image(0, 0, "titlescreen")
       .setDisplaySize(this.CONFIG.width, this.CONFIG.height)
@@ -150,6 +151,7 @@ class Menu extends BaseScene {
    * goPlay - launch next scene
    */
   goPlay() {
+    //this.menuMusic.stop();
     this.scene.start("Intro", { music: this.menuMusic });
   }
 }

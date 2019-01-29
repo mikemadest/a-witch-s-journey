@@ -29,12 +29,22 @@ class Intro extends Menu {
     );
     this.createBackground();
     this.textsData = this.cache.json.get("textsData");
+
+    const padding = 15;
+    this.maxWidth =
+      (0.95 * this.CONFIG.width) / this.cameras.main.zoom - padding;
+
     this.add
       .text(
         this.CONFIG.centerX,
         this.CONFIG.height - 20,
         this.textsData["MY_INFO"],
-        { fill: "#fff", fontSize: "10px", fontFamily: "Arial, sans serif" }
+        {
+          fill: "#fff",
+          fontSize: "10px",
+          fontFamily: "Arial, sans serif",
+          wordWrap: { width: this.maxWidth, useAdvancedWrap: true }
+        }
       )
       .setOrigin(0.5);
     this.storySteps = [
@@ -57,7 +67,8 @@ class Intro extends Menu {
       .text(this.CONFIG.centerX, 100, this.storySteps[index], {
         fill: "#fff",
         fontSize: "20px",
-        fontFamily: "Arial, sans serif"
+        fontFamily: "Arial, sans serif",
+        wordWrap: { width: this.maxWidth, useAdvancedWrap: true }
       })
       .setOrigin(0.5)
       .setAlpha(0);

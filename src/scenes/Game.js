@@ -46,8 +46,15 @@ class Game extends BaseScene {
     // main tile map
     this.layers = {};
     this.map = this.add.tilemap("level1");
-    const backgroundTile = this.map.addTilesetImage("overworld", "gameTile");
-    const objectsTile = this.map.addTilesetImage("objects", "objectsTile");
+    const backgroundTile = this.map.addTilesetImage(
+      "overworld",
+      "gameTile",
+      16,
+      16,
+      1,
+      2
+    );
+    //const objectsTile = this.map.addTilesetImage("objects", "objectsTile");
     //const objectsLayer = this.map.createStaticLayer("objects", objectsTile);
     this.layers["belowLayer"] = this.map.createDynamicLayer(
       "belowLayer",
@@ -80,38 +87,15 @@ class Game extends BaseScene {
       0
     );
 
-    /*this.layers["belowLayer"].setDepth(1);
-    this.layers["worldLayer"].setDepth(2);
-    this.layers["detailObstacles"].setDepth(3);
-    this.layers["belowdetails"].setDepth(4);*/
-    //this.layers["detailObstacles"].setDepth(1);
     this.layers["aboveLayer"].setDepth(2);
-
     this.sys.animatedTiles.init(this.map);
-
     this.createWorldAnimations();
     this.createWorldInhabitants();
-
     this.gameMusic = this.sound.add("ambiance");
     this.gameMusic.setVolume(0.1);
     this.gameMusic.play();
 
-    this.cursors = this.input.keyboard.createCursorKeys();
-
-    // placing camera : we use a dolly to round position
-    // and avoid artefacts when moving
-    this.cameras.main.setBounds(
-      0,
-      0,
-      this.map.widthInPixels,
-      this.map.heightInPixels
-    );
-    this.cameraDolly = new Phaser.Geom.Point(
-      this.creatures["player"].spr.x,
-      this.creatures["player"].spr.y
-    );
-    this.cameras.main.startFollow(this.cameraDolly);
-
+    // the limits are fixed by the map
     this.physics.world.setBounds(
       0,
       0,
@@ -119,7 +103,32 @@ class Game extends BaseScene {
       this.map.heightInPixels
     );
 
-    // just an experiment, pretty sure there's a better way...
+    // ensure the camera can go everywhere in the map
+    this.cameras.main.setBounds(
+      0,
+      0,
+      this.map.widthInPixels,
+      this.map.heightInPixels
+    );
+
+    // placing camera : we use a dolly to round position
+    // and avoid artefacts when moving
+    this.cameraDolly = new Phaser.Geom.Point(
+      this.creatures["player"].spr.x,
+      this.creatures["player"].spr.y
+    );
+    this.cameras.main.startFollow(this.cameraDolly);
+
+    // basic keyboard control
+    this.cursors = {
+      ...this.input.keyboard.createCursorKeys(),
+      ...this.input.keyboard.addKeys("Z,S,Q,D")
+    };
+
+    // space for action
+    this.input.keyboard.on("keydown_SPACE", () => this.throwFireball());
+
+    // just an experiment / replace with emitter ?
     this.fireballs = this.physics.add.group();
     this.physics.add.collider(
       this.fireballs,
@@ -132,24 +141,39 @@ class Game extends BaseScene {
       fireball => this.explodeOnContact(fireball)
     );
 
-    this.handleCollisions();
-    this.showQuest();
-
-    this.input.keyboard.on("keydown_SPACE", () => this.throwFireball());
-
+    // destroy fireballs reaching the boundaries
     this.physics.world.on("worldbounds", function(body) {
       var ball = body.gameObject;
       if (ball.frame.name.indexOf("fireball") >= 0) {
         ball.destroy();
       }
     });
+
+    // pretty basic, need to make it reusable
+    this.handleCollisions();
+    this.showQuest();
+
+    // mouse / touch controls
+    const playerSprite = this.creatures["player"].spr;
+    this.pointerDownMove = false;
+    this.layers["aboveLayer"].setInteractive();
+    this.layers["aboveLayer"].on("pointerdown", pointer => {
+      this.pointerDownMove = pointer;
+    });
+    this.layers["aboveLayer"].on("pointermove", pointer => {
+      if (this.pointerDownMove) {
+        this.pointerDownMove = pointer;
+      }
+    });
+    this.layers["aboveLayer"].on("pointerup", () => {
+      this.pointerDownMove = false;
+      playerSprite.anims.stop();
+      this.creatures["player"].spr.setVelocity(0);
+    });
+
     // debug
     //this.showDebugInfos();
 
-    // Add a listener to our resize event
-    //this.sys.game.events.on('resize', this.resize, this);
-    // Call the resize so the game resizes correctly on scene start
-    //this.resize();
     // Listen for this scene exit
     this.events.once("shutdown", this.shutdown, this);
   }
@@ -161,15 +185,38 @@ class Game extends BaseScene {
    * @param delta
    */
   update(time, delta) {
-    this.creatures["player"].entity.update();
-    this.cameraDolly.x = Math.floor(this.creatures["player"].spr.x);
-    this.cameraDolly.y = Math.floor(this.creatures["player"].spr.y);
+    const player = this.creatures["player"];
+    player.entity.update(this.pointerDownMove);
+    this.cameraDolly.x = Math.floor(player.spr.x);
+    this.cameraDolly.y = Math.floor(player.spr.y);
   }
-
 
   shutdown() {
     // When this scene exits, remove the resize handler
     this.sys.game.events.off("resize", this.resize, this);
+  }
+
+  /**
+   * waitInputToContinue
+   *
+   * @param  {type} callback description
+   * @return {type}          description
+   */
+  waitInputToContinue(callback) {
+    if (typeof callback !== "function") {
+      this.input.off("pointerup");
+      this.input.keyboard.off("keyup");
+      return;
+    }
+    this.input.on("pointerup", callback, this);
+    function handleKeyUp(e) {
+      switch (e.code) {
+        case "Enter":
+          callback();
+          break;
+      }
+    }
+    this.input.keyboard.on("keyup", handleKeyUp, this);
   }
 
   /**
@@ -185,41 +232,51 @@ class Game extends BaseScene {
     const lineCount = text.split("\n").length;
     const textSize = 20 * lineCount;
     const padding = 15;
-    const w = typeof width === "number" ? width : 0.95 * this.CONFIG.width;
-    const h = textSize + padding * 2;
+    const w =
+      typeof width === "number"
+        ? width
+        : (0.95 * this.CONFIG.width) / this.cameras.main.zoom;
+    let h = textSize + padding * 2;
 
     x = typeof x === "number" ? x : (this.CONFIG.width - w) / 2;
     if (x < 0) {
       x = this.CONFIG.width - w + x;
     }
     y = typeof y === "number" ? y : this.CONFIG.centerY + 5;
-    const boxBg = this.add.graphics({ x: x, y: y });
-    boxBg.clear().setScrollFactor(0);
-    boxBg.fillStyle("0xFFFFFF", 1);
-    boxBg
-      .fillRect(0, 0, w, h)
-      .setAlpha(0)
-      .setDepth(10);
 
-    const boxBorder = this.add.graphics({ x: x, y: y });
-    boxBorder.clear().setScrollFactor(0);
-    boxBorder.lineStyle(4, "0x4D6592", 1);
-    boxBorder
-      .strokeRect(0, 0, w, h)
-      .setAlpha(0)
-      .setDepth(10);
-
+    // quest text
     const questText = this.add
       .text(x + padding, y + padding, text, {
         fill: "#000",
         fontSize: "16px",
-        fontFamily: "Verdana, sans serif"
+        fontFamily: "Verdana, sans serif",
+        wordWrap: { width: w - padding, useAdvancedWrap: true }
       })
       .setLineSpacing(3)
       .setOrigin(0)
       .setScrollFactor(0)
       .setAlpha(0)
       .setDepth(10);
+
+    h = questText.displayHeight + padding * 2;
+
+    // modal background
+    const boxBg = this.add.graphics({ x: x, y: y });
+    boxBg.clear().setScrollFactor(0);
+    boxBg.fillStyle("0xFFFFFF", 1);
+    boxBg
+      .fillRect(0, 0, w, h)
+      .setAlpha(0)
+      .setDepth(9);
+
+    // modal border
+    const boxBorder = this.add.graphics({ x: x, y: y });
+    boxBorder.clear().setScrollFactor(0);
+    boxBorder.lineStyle(4, "0x4D6592", 1);
+    boxBorder
+      .strokeRect(0, 0, w, h)
+      .setAlpha(0)
+      .setDepth(9);
 
     return [questText, boxBg, boxBorder];
   }
@@ -391,29 +448,6 @@ class Game extends BaseScene {
         easeParams: [1, 1]
       });
     });
-  }
-
-  /**
-   * waitInputToContinue
-   *
-   * @param  {type} callback description
-   * @return {type}          description
-   */
-  waitInputToContinue(callback) {
-    if (typeof callback !== "function") {
-      this.input.off("pointerup");
-      this.input.keyboard.off("keyup");
-      return;
-    }
-    this.input.on("pointerup", callback, this);
-    function handleKeyUp(e) {
-      switch (e.code) {
-        case "Enter":
-          callback();
-          break;
-      }
-    }
-    this.input.keyboard.on("keyup", handleKeyUp, this);
   }
 
   /**
@@ -669,7 +703,6 @@ class Game extends BaseScene {
    */
   dammagePlayer(player, enemy) {
     this.sound.play("damage");
-    //const player = this.creatures["player"];
     this.creatures["player"].entity.takeDamage(player);
 
     // Knocks back enemy after colliding

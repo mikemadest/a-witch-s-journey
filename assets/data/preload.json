@@ -1,8 +1,7 @@
 {
   "images": [
-    ["gameTile", "assets/tilemap/overworld.png"],
-    ["objectsTile", "assets/tilemap/objects.png"],
-    ["charactersTile", "assets/tilemap/character.png"]
+    ["gameTile", "assets/tilemap/overworld-extruded.png"],
+    ["objectsTile", "assets/tilemap/objects.png"]
   ],
 
   "audio": [

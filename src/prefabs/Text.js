@@ -7,11 +7,15 @@ export default class Text {
     this.x = x;
     this.y = y;
     this.text = string;
+    const padding = 15;
+    const w = (0.95 * ctx.CONFIG.width) / ctx.cameras.main.zoom;
+
     this.style = {
       fontFamily: fontFamily ? fontFamily : "ClickPixel",
       fontSize: size,
       color: "0xFFFFFF",
-      align: "center"
+      align: "center",
+      wordWrap: { width: w - padding, useAdvancedWrap: true }
     };
     this.origin = this.initOrigin(origin);
     this.obj = this.createText();

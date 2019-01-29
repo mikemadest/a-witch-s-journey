@@ -1,5 +1,4 @@
-
-import Entity from './Entity';
+import Entity from "./Entity";
 
 /**
  * Player class
@@ -35,30 +34,69 @@ export default class Player extends Entity {
   /**
    * Refresh player for each frame
    */
-  update() {
+  update(pointer) {
     // Stop any previous movement from the last frame
     this.spr.body.setVelocity(0);
 
-    if (this.ctx.cursors.left.isDown) {
-      this.spr.setVelocityX(-this.spr.speed);
-      this.spr.anims.play("spr-hero-walkleft", true);
-
-      //
-    } else if (this.ctx.cursors.right.isDown) {
-      this.spr.setVelocityX(this.spr.speed);
-      this.spr.anims.play("spr-hero-walkright", true);
-    }
-
-    if (this.ctx.cursors.down.isDown) {
-      this.spr.setVelocityY(this.spr.speed);
-      this.spr.anims.play("spr-hero-walkdown", true);
-    } else if (this.ctx.cursors.up.isDown) {
-      this.spr.setVelocityY(-this.spr.speed);
-      this.spr.anims.play("spr-hero-walkup", true);
+    if (!this.handleMouseControls(pointer)) {
+      this.handleKeyboardControls();
     }
 
     // Normalize and scale the velocity so that player can't move faster along a diagonal
     this.spr.body.velocity.normalize().scale(this.spr.speed);
+
+    // no movement, stop animation / idle animation
+    if (this.spr.body.velocity.x === 0 && this.spr.body.velocity.y === 0) {
+      this.spr.anims.stop();
+      this.spr.setFrame("hero-walkdown-1");
+    }
+  }
+
+  handleKeyboardControls() {
+    if (this.ctx.cursors.Q.isDown || this.ctx.cursors.left.isDown) {
+      this.spr.setVelocityX(-this.spr.speed);
+      this.spr.anims.play("spr-hero-walkleft", true);
+
+    //
+    } else if (this.ctx.cursors.D.isDown || this.ctx.cursors.right.isDown) {
+      this.spr.setVelocityX(this.spr.speed);
+      this.spr.anims.play("spr-hero-walkright", true);
+    }
+
+    if (this.ctx.cursors.S.isDown || this.ctx.cursors.down.isDown) {
+      this.spr.setVelocityY(this.spr.speed);
+      this.spr.anims.play("spr-hero-walkdown", true);
+
+    //
+    } else if (this.ctx.cursors.Z.isDown || this.ctx.cursors.up.isDown) {
+      this.spr.setVelocityY(-this.spr.speed);
+      this.spr.anims.play("spr-hero-walkup", true);
+    }
+  }
+
+  handleMouseControls(pointer) {
+    if (pointer) {
+      this.ctx.physics.moveTo(this.spr, pointer.worldX, pointer.worldY, 60);
+      const diffX = pointer.worldX - this.spr.x;
+      const diffY = pointer.worldY - this.spr.y;
+      const mostlyUpMove = Math.abs(diffY) > Math.abs(diffX);
+      if (mostlyUpMove) {
+        if (diffY > 0) {
+          this.spr.anims.play("spr-hero-walkdown", true);
+        } else {
+          this.spr.anims.play("spr-hero-walkup", true);
+        }
+      } else {
+        if (diffX > 0) {
+          this.spr.anims.play("spr-hero-walkright", true);
+        } else {
+          this.spr.anims.play("spr-hero-walkleft", true);
+        }
+      }
+
+    } else {
+      return false;
+    }
   }
 
   attack() {}

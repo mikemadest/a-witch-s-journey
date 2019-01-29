@@ -42,7 +42,7 @@ module.exports = {
 
   plugins: [
 
-    //new CleanWebpackPlugin(['dist']),
+    new CleanWebpackPlugin(['dist']),
 
     new HtmlWebpackPlugin({
         path: path.resolve(__dirname, 'dist', 'index.html'),
@@ -62,13 +62,13 @@ module.exports = {
         hash: false
     }),
 
-    /*new webpack.optimize.UglifyJsPlugin({
+    new webpack.optimize.UglifyJsPlugin({
       drop_console: true,
       minimize: true,
       output: {
         comments: false
       }
-    }),*/
+    }),
     new CopyWebpackPlugin([
       {
         from: path.resolve(__dirname, 'index.html'),

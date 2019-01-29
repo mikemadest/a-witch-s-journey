@@ -6,13 +6,26 @@ import Intro from "./scenes/Intro";
 import Game from "./scenes/Game";
 import GameOver from "./scenes/GameOver";
 
+let width = 300;
+let height = 300;
+const ratio = window.innerWidth / window.innerHeight;
+
+// landscape, fit height
+if (ratio > 0.6) {
+  width = (height * window.innerWidth) / window.innerHeight;
+
+  // portrait, fit width
+} else {
+  height = (width * window.innerHeight) / window.innerWidth;
+}
+
 const config = {
   type: Phaser.AUTO,
   parent: "phaser-app",
   title: "A Witch's Journey",
   url: "",
-  width: 400,
-  height: 400,
+  width: width,
+  height: height,
   physics: {
     default: "arcade",
     arcade: {

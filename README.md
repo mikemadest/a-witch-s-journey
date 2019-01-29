@@ -8,6 +8,15 @@ Destroy the monsters attaking the village, get him back !
 ## Log
 
 
+### Version 0.07
+- animated tiles
+- Webpack
+- first mobile support : screen size, controls with touch
+- zqsd key to move
+- idle state for player
+- extruded tilemap
+
+
 ### Version 0.06
 - hitting enemy and destroying them
 - fireball spell !
@@ -63,13 +72,14 @@ New entities and animations :
 ----------------------
 
 ## BACKLOG
+- spell and actions UI (icon on the bottom left of the screen)
+- fix graphic bugs
+- spell casting with touch
 - enemy down animation
-- animated tiles
 - fireball explode on contact
 - monsters movements
 - bridge boss attacks and script
 - code refactoring : quest module, modal management, events managements
-- Webpack
 - Monster basic AI, attack when the player is close, move arround
 - monster dynamic spawn (boss effect, story)
 - killing the bridge boss allow access to the next zone (demo ending).
