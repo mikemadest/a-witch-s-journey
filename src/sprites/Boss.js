@@ -1,4 +1,3 @@
-
 import Monster from './Monster';
 
 /**
@@ -18,5 +17,4 @@ export default class Boss extends Monster {
     this.spr = this.spr ? this.spr[0] : {};
     return this.spr;
   }
-
 }

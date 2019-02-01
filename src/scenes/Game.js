@@ -1,8 +1,4 @@
-//
-// Next : going node and webpack...
-// import AnimatedTiles from "../libs/Plugins/AnimatedTiles.min.js";
 import BaseScene from "./BaseScene";
-
 import Entity from "../sprites/Entity";
 import Boss from "../sprites/Boss";
 import Monster from "../sprites/Monster";
@@ -39,6 +35,7 @@ class Game extends BaseScene {
     super.create();
     this.spritesData = this.cache.json.get("spritesData");
     this.textsData = this.cache.json.get("textsData");
+    this.stylesData = this.cache.json.get("stylesData");
 
     // just to get it working quickly before having a real spell system
     this.playerHasMagicStaff = false;
@@ -127,6 +124,19 @@ class Game extends BaseScene {
 
     // space for action
     this.input.keyboard.on("keydown_SPACE", () => this.throwFireball());
+
+    this.actionBar = this.physics.add.sprite(
+      30,
+      this.CONFIG.height - 20,
+      "worldAnim",
+      "fireball-4"
+    );
+    this.actionBar.setScale(0.8, 0.8);
+    this.actionBar.setDepth(10); // UI depth
+    this.actionBar.setScrollFactor(0);
+    this.actionBar.setVisible(false);
+    this.actionBar.setInteractive();
+    this.actionBar.on("pointerup", () => this.throwFireball());
 
     // just an experiment / replace with emitter ?
     this.fireballs = this.physics.add.group();
@@ -231,7 +241,7 @@ class Game extends BaseScene {
   createModal(text, x, y, width) {
     const lineCount = text.split("\n").length;
     const textSize = 20 * lineCount;
-    const padding = 15;
+    const padding = 6;
     const w =
       typeof width === "number"
         ? width
@@ -245,13 +255,10 @@ class Game extends BaseScene {
     y = typeof y === "number" ? y : this.CONFIG.centerY + 5;
 
     // quest text
+    const questStyle = this.stylesData["questTest"];
+    questStyle["wordWrap"] = { width: w - padding, useAdvancedWrap: true };
     const questText = this.add
-      .text(x + padding, y + padding, text, {
-        fill: "#000",
-        fontSize: "16px",
-        fontFamily: "Verdana, sans serif",
-        wordWrap: { width: w - padding, useAdvancedWrap: true }
-      })
+      .text(x + padding, y + padding, text, questStyle)
       .setLineSpacing(3)
       .setOrigin(0)
       .setScrollFactor(0)
@@ -272,7 +279,7 @@ class Game extends BaseScene {
     // modal border
     const boxBorder = this.add.graphics({ x: x, y: y });
     boxBorder.clear().setScrollFactor(0);
-    boxBorder.lineStyle(4, "0x4D6592", 1);
+    boxBorder.lineStyle(3, "0x4D6592", 1);
     boxBorder
       .strokeRect(0, 0, w, h)
       .setAlpha(0)
@@ -295,7 +302,6 @@ class Game extends BaseScene {
       ease: "Cubic",
       easeParams: [1, 1]
     });
-
     this.waitInputToContinue(() => {
       this.waitInputToContinue(false);
       this.startQuest();
@@ -314,11 +320,12 @@ class Game extends BaseScene {
     });
   }
 
+
   /**
    * init items and goal infos
    **/
   startQuest() {
-    this.questRemainingCoins = 6;
+    this.questRemainingCoins = 1;
     this.questRequiredCoins = 6;
     this.questEnded = false;
 
@@ -394,6 +401,7 @@ class Game extends BaseScene {
 
     // coins obtained ! Quest is over
     if (this.questRemainingCoins === 0) {
+      this.coins.forEach(coin => coin.destroy());
       this.statusModal[0].setText(this.textsData["QUEST_SUCCESS1"]);
 
       this.time.addEvent({
@@ -439,7 +447,26 @@ class Game extends BaseScene {
     this.waitInputToContinue(() => {
       tween.stop();
       this.playerHasMagicStaff = true;
+      this.actionBar.setVisible(true);
+      this.showStaffTuto(modalElements);
+    });
+  }
+
+
+/**
+ * Display help to use staff spell and throw a fireball
+ *
+ * @param  {type} modalElements access to existing modal
+ * @return void
+ */
+showStaffTuto(modalElements) {
+    const w = (0.95 * this.CONFIG.width) / this.cameras.main.zoom;
+    modalElements[0].setText(this.textsData["TUTO_STAFF_MOBILE"]);
+    modalElements[1].clear().fillRect(0, 0, w, 72);
+    modalElements[2].clear().lineStyle(3, "0x4D6592", 1).strokeRect(0, 0, w, 72);
+    this.waitInputToContinue(() => {
       this.waitInputToContinue(false);
+      this.startQuest();
       this.tweens.add({
         targets: modalElements,
         alpha: 0,
@@ -448,7 +475,10 @@ class Game extends BaseScene {
         easeParams: [1, 1]
       });
     });
-  }
+}
+
+
+
 
   /**
    * Debug helper, needs to work on that
@@ -584,6 +614,7 @@ class Game extends BaseScene {
     fireball.body.setCollideWorldBounds(true);
     fireball.body.onWorldBounds = true;
     fireball.anims.play("spr-fireball", true);
+    this.sound.play("fireball");
 
     const x = this.creatures["player"].spr.x;
     const y = this.creatures["player"].spr.y;

@@ -48,10 +48,13 @@ export default class Player extends Entity {
     // no movement, stop animation / idle animation
     if (this.spr.body.velocity.x === 0 && this.spr.body.velocity.y === 0) {
       this.spr.anims.stop();
-      this.spr.setFrame("hero-walkdown-1");
+      //this.spr.setFrame("hero-walkdown-1");
     }
   }
 
+  /**
+   *
+   */
   handleKeyboardControls() {
     if (this.ctx.cursors.Q.isDown || this.ctx.cursors.left.isDown) {
       this.spr.setVelocityX(-this.spr.speed);
@@ -74,6 +77,11 @@ export default class Player extends Entity {
     }
   }
 
+  /**
+   *
+   * @param pointer
+   * @returns {boolean}
+   */
   handleMouseControls(pointer) {
     if (pointer) {
       this.ctx.physics.moveTo(this.spr, pointer.worldX, pointer.worldY, 60);

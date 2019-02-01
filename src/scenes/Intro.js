@@ -1,12 +1,12 @@
 /**
  *
  **/
-import Menu from "./Menu";
-import Text from "../prefabs/Text";
+import Menu from './Menu';
+import Text from '../prefabs/Text';
 
 class Intro extends Menu {
   constructor() {
-    super({ key: "Intro", active: false });
+    super({ key: 'Intro', active: false });
   }
 
   init(data) {
@@ -23,12 +23,12 @@ class Intro extends Menu {
   create() {
     // Call the resize so the game resizes correctly on scene start
     this.sys.game.events.on(
-      "resize",
+      'resize',
       () => this.resizeApp(this.sys.game.CONFIG),
       this
     );
     this.createBackground();
-    this.textsData = this.cache.json.get("textsData");
+    this.textsData = this.cache.json.get('textsData');
 
     const padding = 15;
     this.maxWidth =
@@ -38,19 +38,19 @@ class Intro extends Menu {
       .text(
         this.CONFIG.centerX,
         this.CONFIG.height - 20,
-        this.textsData["MY_INFO"],
+        this.textsData['MY_INFO'],
         {
-          fill: "#fff",
-          fontSize: "10px",
-          fontFamily: "Arial, sans serif",
-          wordWrap: { width: this.maxWidth, useAdvancedWrap: true }
+          fill: '#fff',
+          fontSize: '10px',
+          fontFamily: 'Arial, sans serif',
+          wordWrap: { width: this.maxWidth, useAdvancedWrap: true },
         }
       )
       .setOrigin(0.5);
     this.storySteps = [
-      this.textsData["STORY_1"],
-      this.textsData["STORY_2"],
-      this.textsData["STORY_3"]
+      this.textsData['STORY_1'],
+      this.textsData['STORY_2'],
+      this.textsData['STORY_3'],
     ];
 
     this.displayIntroText(0);
@@ -65,23 +65,23 @@ class Intro extends Menu {
   displayIntroText(index) {
     const text = this.add
       .text(this.CONFIG.centerX, 100, this.storySteps[index], {
-        fill: "#fff",
-        fontSize: "20px",
-        fontFamily: "Arial, sans serif",
-        wordWrap: { width: this.maxWidth, useAdvancedWrap: true }
+        fill: '#fff',
+        fontSize: '20px',
+        fontFamily: 'Arial, sans serif',
+        wordWrap: { width: this.maxWidth, useAdvancedWrap: true },
       })
       .setOrigin(0.5)
       .setAlpha(0);
 
     const buttonTextCode =
-      index < this.storySteps.length - 1 ? "CONTINUE" : "GAME_START";
+      index < this.storySteps.length - 1 ? 'CONTINUE' : 'GAME_START';
 
     const tweenConfig = {
       targets: text,
       alpha: 1,
       duration: 1000,
-      ease: "Linear",
-      delay: 200
+      ease: 'Linear',
+      delay: 200,
     };
     if (index === 0) {
       tweenConfig.onComplete = () => this.showStartText(0, buttonTextCode);
@@ -112,13 +112,13 @@ class Intro extends Menu {
       targets: this.bgImage,
       alpha: 0,
       duration: 1500,
-      ease: "Cubic",
+      ease: 'Cubic',
       easeParams: [1, 1],
       delay: 0,
       onComplete: () => {
         this.menuMusic.stop();
-        this.scene.start("Game");
-      }
+        this.scene.start('Game');
+      },
     });
   }
 }

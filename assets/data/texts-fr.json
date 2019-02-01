@@ -13,5 +13,7 @@
   "QUEST_STATUS": "Remaining coins : ",
   "QUEST_SUCCESS1": "You have enough coins !",
   "QUEST_SUCCESS2": "Go grab the staff !",
-  "QUEST_ENDED": "Well done youngling !\nplease use this magic staff with care.\n\nYOU NOW HAVE THE MAGIC STAFF !\nPress [SPACE] to use it"
+  "QUEST_ENDED": "Well done youngling !\nplease use this magic staff with care.",
+  "TUTO_STAFF_MOBILE": "YOU NOW HAVE THE MAGIC STAFF !\nTouch the spell on the bottom left to use it !",
+  "TUTO_STAFF_DESKTOP": "YOU NOW HAVE THE MAGIC STAFF !\nPress [SPACE] to use it"
 }

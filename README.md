@@ -7,14 +7,15 @@ Destroy the monsters attaking the village, get him back !
 ----------------------
 ## Log
 
-
 ### Version 0.07
 - animated tiles
-- Webpack
-- first mobile support : screen size, controls with touch
-- zqsd key to move
 - idle state for player
 - extruded tilemap
+- Webpack
+- mobile support
+- spell icon on the bottom left of the screen
+- spell casting with touch
+- added zqsd key to move
 
 
 ### Version 0.06
@@ -72,9 +73,7 @@ New entities and animations :
 ----------------------
 
 ## BACKLOG
-- spell and actions UI (icon on the bottom left of the screen)
 - fix graphic bugs
-- spell casting with touch
 - enemy down animation
 - fireball explode on contact
 - monsters movements

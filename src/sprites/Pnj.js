@@ -1,6 +1,4 @@
-
 import Entity from './Entity';
-
 
 /**
  * Player class
