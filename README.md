@@ -16,6 +16,7 @@ Destroy the monsters attaking the village, get him back !
 - spell icon on the bottom left of the screen
 - spell casting with touch
 - added zqsd key to move
+- title screen image better fit for screen
 
 
 ### Version 0.06
@@ -74,6 +75,7 @@ New entities and animations :
 
 ## BACKLOG
 - fix graphic bugs
+- rework tilemap : with tiled 1.1.6 instead of 1.2.1 "collide" property will work
 - enemy down animation
 - fireball explode on contact
 - monsters movements

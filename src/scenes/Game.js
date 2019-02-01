@@ -325,7 +325,7 @@ class Game extends BaseScene {
    * init items and goal infos
    **/
   startQuest() {
-    this.questRemainingCoins = 1;
+    this.questRemainingCoins = 6;
     this.questRequiredCoins = 6;
     this.questEnded = false;
 
@@ -466,7 +466,6 @@ showStaffTuto(modalElements) {
     modalElements[2].clear().lineStyle(3, "0x4D6592", 1).strokeRect(0, 0, w, 72);
     this.waitInputToContinue(() => {
       this.waitInputToContinue(false);
-      this.startQuest();
       this.tweens.add({
         targets: modalElements,
         alpha: 0,
