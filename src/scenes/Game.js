@@ -1,8 +1,4 @@
-//
-// Next : going node and webpack...
-// import AnimatedTiles from "../libs/Plugins/AnimatedTiles.min.js";
 import BaseScene from "./BaseScene";
-
 import Entity from "../sprites/Entity";
 import Boss from "../sprites/Boss";
 import Monster from "../sprites/Monster";
@@ -39,6 +35,7 @@ class Game extends BaseScene {
     super.create();
     this.spritesData = this.cache.json.get("spritesData");
     this.textsData = this.cache.json.get("textsData");
+    this.stylesData = this.cache.json.get("stylesData");
 
     // just to get it working quickly before having a real spell system
     this.playerHasMagicStaff = false;
@@ -46,8 +43,15 @@ class Game extends BaseScene {
     // main tile map
     this.layers = {};
     this.map = this.add.tilemap("level1");
-    const backgroundTile = this.map.addTilesetImage("overworld", "gameTile");
-    const objectsTile = this.map.addTilesetImage("objects", "objectsTile");
+    const backgroundTile = this.map.addTilesetImage(
+      "overworld",
+      "gameTile",
+      16,
+      16,
+      1,
+      2
+    );
+    //const objectsTile = this.map.addTilesetImage("objects", "objectsTile");
     //const objectsLayer = this.map.createStaticLayer("objects", objectsTile);
     this.layers["belowLayer"] = this.map.createDynamicLayer(
       "belowLayer",
@@ -61,14 +65,14 @@ class Game extends BaseScene {
       0,
       0
     );
-    this.layers["detailObstacles"] = this.map.createDynamicLayer(
-      "detailObstacles",
+    this.layers["belowdetails"] = this.map.createDynamicLayer(
+      "belowdetails",
       backgroundTile,
       0,
       0
     );
-    this.layers["belowdetails"] = this.map.createDynamicLayer(
-      "belowdetails",
+    this.layers["detailObstacles"] = this.map.createDynamicLayer(
+      "detailObstacles",
       backgroundTile,
       0,
       0
@@ -80,32 +84,15 @@ class Game extends BaseScene {
       0
     );
 
-    this.layers["aboveLayer"].setDepth(1);
+    this.layers["aboveLayer"].setDepth(2);
     this.sys.animatedTiles.init(this.map);
-
     this.createWorldAnimations();
     this.createWorldInhabitants();
-
     this.gameMusic = this.sound.add("ambiance");
     this.gameMusic.setVolume(0.1);
     this.gameMusic.play();
 
-    this.cursors = this.input.keyboard.createCursorKeys();
-
-    // placing camera : we use a dolly to round position
-    // and avoid artefacts when moving
-    this.cameras.main.setBounds(
-      0,
-      0,
-      this.map.widthInPixels,
-      this.map.heightInPixels
-    );
-    this.cameraDolly = new Phaser.Geom.Point(
-      this.creatures["player"].spr.x,
-      this.creatures["player"].spr.y
-    );
-    this.cameras.main.startFollow(this.cameraDolly);
-
+    // the limits are fixed by the map
     this.physics.world.setBounds(
       0,
       0,
@@ -113,7 +100,45 @@ class Game extends BaseScene {
       this.map.heightInPixels
     );
 
-    // just an experiment, pretty sure there's a better way...
+    // ensure the camera can go everywhere in the map
+    this.cameras.main.setBounds(
+      0,
+      0,
+      this.map.widthInPixels,
+      this.map.heightInPixels
+    );
+
+    // placing camera : we use a dolly to round position
+    // and avoid artefacts when moving
+    this.cameraDolly = new Phaser.Geom.Point(
+      this.creatures["player"].spr.x,
+      this.creatures["player"].spr.y
+    );
+    this.cameras.main.startFollow(this.cameraDolly);
+
+    // basic keyboard control
+    this.cursors = {
+      ...this.input.keyboard.createCursorKeys(),
+      ...this.input.keyboard.addKeys("Z,S,Q,D")
+    };
+
+    // space for action
+    this.input.keyboard.on("keydown_SPACE", () => this.throwFireball());
+
+    this.actionBar = this.physics.add.sprite(
+      30,
+      this.CONFIG.height - 20,
+      "worldAnim",
+      "fireball-4"
+    );
+    this.actionBar.setScale(0.8, 0.8);
+    this.actionBar.setDepth(10); // UI depth
+    this.actionBar.setScrollFactor(0);
+    this.actionBar.setVisible(false);
+    this.actionBar.setInteractive();
+    this.actionBar.on("pointerup", () => this.throwFireball());
+
+    // just an experiment / replace with emitter ?
     this.fireballs = this.physics.add.group();
     this.physics.add.collider(
       this.fireballs,
@@ -126,24 +151,39 @@ class Game extends BaseScene {
       fireball => this.explodeOnContact(fireball)
     );
 
-    this.handleCollisions();
-    this.showQuest();
-
-    this.input.keyboard.on("keydown_SPACE", () => this.throwFireball());
-
+    // destroy fireballs reaching the boundaries
     this.physics.world.on("worldbounds", function(body) {
       var ball = body.gameObject;
       if (ball.frame.name.indexOf("fireball") >= 0) {
         ball.destroy();
       }
     });
+
+    // pretty basic, need to make it reusable
+    this.handleCollisions();
+    this.showQuest();
+
+    // mouse / touch controls
+    const playerSprite = this.creatures["player"].spr;
+    this.pointerDownMove = false;
+    this.layers["aboveLayer"].setInteractive();
+    this.layers["aboveLayer"].on("pointerdown", pointer => {
+      this.pointerDownMove = pointer;
+    });
+    this.layers["aboveLayer"].on("pointermove", pointer => {
+      if (this.pointerDownMove) {
+        this.pointerDownMove = pointer;
+      }
+    });
+    this.layers["aboveLayer"].on("pointerup", () => {
+      this.pointerDownMove = false;
+      playerSprite.anims.stop();
+      this.creatures["player"].spr.setVelocity(0);
+    });
+
     // debug
     //this.showDebugInfos();
 
-    // Add a listener to our resize event
-    //this.sys.game.events.on('resize', this.resize, this);
-    // Call the resize so the game resizes correctly on scene start
-    //this.resize();
     // Listen for this scene exit
     this.events.once("shutdown", this.shutdown, this);
   }
@@ -155,15 +195,38 @@ class Game extends BaseScene {
    * @param delta
    */
   update(time, delta) {
-    this.creatures["player"].entity.update();
-    this.cameraDolly.x = Math.floor(this.creatures["player"].spr.x);
-    this.cameraDolly.y = Math.floor(this.creatures["player"].spr.y);
+    const player = this.creatures["player"];
+    player.entity.update(this.pointerDownMove);
+    this.cameraDolly.x = Math.floor(player.spr.x);
+    this.cameraDolly.y = Math.floor(player.spr.y);
   }
-
 
   shutdown() {
     // When this scene exits, remove the resize handler
     this.sys.game.events.off("resize", this.resize, this);
+  }
+
+  /**
+   * waitInputToContinue
+   *
+   * @param  {type} callback description
+   * @return {type}          description
+   */
+  waitInputToContinue(callback) {
+    if (typeof callback !== "function") {
+      this.input.off("pointerup");
+      this.input.keyboard.off("keyup");
+      return;
+    }
+    this.input.on("pointerup", callback, this);
+    function handleKeyUp(e) {
+      switch (e.code) {
+        case "Enter":
+          callback();
+          break;
+      }
+    }
+    this.input.keyboard.on("keyup", handleKeyUp, this);
   }
 
   /**
@@ -178,42 +241,49 @@ class Game extends BaseScene {
   createModal(text, x, y, width) {
     const lineCount = text.split("\n").length;
     const textSize = 20 * lineCount;
-    const padding = 15;
-    const w = typeof width === "number" ? width : 0.95 * this.CONFIG.width;
-    const h = textSize + padding * 2;
+    const padding = 6;
+    const w =
+      typeof width === "number"
+        ? width
+        : (0.95 * this.CONFIG.width) / this.cameras.main.zoom;
+    let h = textSize + padding * 2;
 
     x = typeof x === "number" ? x : (this.CONFIG.width - w) / 2;
     if (x < 0) {
       x = this.CONFIG.width - w + x;
     }
     y = typeof y === "number" ? y : this.CONFIG.centerY + 5;
+
+    // quest text
+    const questStyle = this.stylesData["questTest"];
+    questStyle["wordWrap"] = { width: w - padding, useAdvancedWrap: true };
+    const questText = this.add
+      .text(x + padding, y + padding, text, questStyle)
+      .setLineSpacing(3)
+      .setOrigin(0)
+      .setScrollFactor(0)
+      .setAlpha(0)
+      .setDepth(10);
+
+    h = questText.displayHeight + padding * 2;
+
+    // modal background
     const boxBg = this.add.graphics({ x: x, y: y });
     boxBg.clear().setScrollFactor(0);
     boxBg.fillStyle("0xFFFFFF", 1);
     boxBg
       .fillRect(0, 0, w, h)
       .setAlpha(0)
-      .setDepth(10);
+      .setDepth(9);
 
+    // modal border
     const boxBorder = this.add.graphics({ x: x, y: y });
     boxBorder.clear().setScrollFactor(0);
-    boxBorder.lineStyle(4, "0x4D6592", 1);
+    boxBorder.lineStyle(3, "0x4D6592", 1);
     boxBorder
       .strokeRect(0, 0, w, h)
       .setAlpha(0)
-      .setDepth(10);
-
-    const questText = this.add
-      .text(x + padding, y + padding, text, {
-        fill: "#000",
-        fontSize: "16px",
-        fontFamily: "Verdana, sans serif"
-      })
-      .setLineSpacing(3)
-      .setOrigin(0)
-      .setScrollFactor(0)
-      .setAlpha(0)
-      .setDepth(10);
+      .setDepth(9);
 
     return [questText, boxBg, boxBorder];
   }
@@ -232,7 +302,6 @@ class Game extends BaseScene {
       ease: "Cubic",
       easeParams: [1, 1]
     });
-
     this.waitInputToContinue(() => {
       this.waitInputToContinue(false);
       this.startQuest();
@@ -250,6 +319,7 @@ class Game extends BaseScene {
       });
     });
   }
+
 
   /**
    * init items and goal infos
@@ -331,6 +401,7 @@ class Game extends BaseScene {
 
     // coins obtained ! Quest is over
     if (this.questRemainingCoins === 0) {
+      this.coins.forEach(coin => coin.destroy());
       this.statusModal[0].setText(this.textsData["QUEST_SUCCESS1"]);
 
       this.time.addEvent({
@@ -376,6 +447,24 @@ class Game extends BaseScene {
     this.waitInputToContinue(() => {
       tween.stop();
       this.playerHasMagicStaff = true;
+      this.actionBar.setVisible(true);
+      this.showStaffTuto(modalElements);
+    });
+  }
+
+
+/**
+ * Display help to use staff spell and throw a fireball
+ *
+ * @param  {type} modalElements access to existing modal
+ * @return void
+ */
+showStaffTuto(modalElements) {
+    const w = (0.95 * this.CONFIG.width) / this.cameras.main.zoom;
+    modalElements[0].setText(this.textsData["TUTO_STAFF_MOBILE"]);
+    modalElements[1].clear().fillRect(0, 0, w, 72);
+    modalElements[2].clear().lineStyle(3, "0x4D6592", 1).strokeRect(0, 0, w, 72);
+    this.waitInputToContinue(() => {
       this.waitInputToContinue(false);
       this.tweens.add({
         targets: modalElements,
@@ -385,30 +474,10 @@ class Game extends BaseScene {
         easeParams: [1, 1]
       });
     });
-  }
+}
 
-  /**
-   * waitInputToContinue
-   *
-   * @param  {type} callback description
-   * @return {type}          description
-   */
-  waitInputToContinue(callback) {
-    if (typeof callback !== "function") {
-      this.input.off("pointerup");
-      this.input.keyboard.off("keyup");
-      return;
-    }
-    this.input.on("pointerup", callback, this);
-    function handleKeyUp(e) {
-      switch (e.code) {
-        case "Enter":
-          callback();
-          break;
-      }
-    }
-    this.input.keyboard.on("keyup", handleKeyUp, this);
-  }
+
+
 
   /**
    * Debug helper, needs to work on that
@@ -544,6 +613,7 @@ class Game extends BaseScene {
     fireball.body.setCollideWorldBounds(true);
     fireball.body.onWorldBounds = true;
     fireball.anims.play("spr-fireball", true);
+    this.sound.play("fireball");
 
     const x = this.creatures["player"].spr.x;
     const y = this.creatures["player"].spr.y;
@@ -634,6 +704,7 @@ class Game extends BaseScene {
       "spr-talking"
     );
     this.talking = this.talkingEntity.create()[0];
+    this.talking.setDepth(2);
     this.time.addEvent({
       delay: 500,
       callback: () => (this.talking.visible = !this.talking.visible),
@@ -662,7 +733,6 @@ class Game extends BaseScene {
    */
   dammagePlayer(player, enemy) {
     this.sound.play("damage");
-    //const player = this.creatures["player"];
     this.creatures["player"].entity.takeDamage(player);
 
     // Knocks back enemy after colliding

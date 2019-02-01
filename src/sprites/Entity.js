@@ -16,7 +16,7 @@ export default class Entity {
     this.map = map;
     this.spawnName = spawnName;
     this.ctx = ctx;
-    this.spriteCache = spriteCache ? spriteCache : "worldAnim";
+    this.spriteCache = spriteCache ? spriteCache : 'worldAnim';
     this.spriteKey = spriteKey;
     this.animName = animName;
   }
@@ -26,11 +26,11 @@ export default class Entity {
    * @returns {Array}
    */
   create() {
-    if (typeof this.spawnName === "object") {
+    if (typeof this.spawnName === 'object') {
       this.spawnName = [this.spawnName];
     }
     const spawnPoint = this.map.findObject(
-      "objects",
+      'objects',
       obj => obj.type === this.spawnName
     );
     const spawnSearch = this.findObjectsByType(this.spawnName, this.map);
@@ -78,7 +78,7 @@ export default class Entity {
     tmp.setCollideWorldBounds(true);
     tmp.onWorldBounds = true;
     tmp.setOrigin(0);
-    if (typeof animName === "number" || typeof animName === "string") {
+    if (typeof animName === 'number' || typeof animName === 'string') {
       tmp.anims.play(animName, true);
     }
 
@@ -108,7 +108,7 @@ export default class Entity {
         entity.setVelocity(0);
       },
       callbackScope: this,
-      repeat: 0
+      repeat: 0,
     });
   }
 
@@ -145,7 +145,7 @@ export default class Entity {
         entity.immune = false;
       },
       callbackScope: this,
-      repeat: 0
+      repeat: 0,
     });
   }
 
@@ -158,7 +158,7 @@ export default class Entity {
    */
   isDead(entity, onDeath) {
     if (entity.life <= 0) {
-      if (typeof onDeath === "function") {
+      if (typeof onDeath === 'function') {
         onDeath.call(this.ctx);
       }
       entity.destroy();

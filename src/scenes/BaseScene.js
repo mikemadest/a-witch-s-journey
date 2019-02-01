@@ -1,4 +1,4 @@
-import { Scene } from "phaser";
+import { Scene } from 'phaser';
 
 class BaseScene extends Scene {
   init() {
@@ -12,7 +12,7 @@ class BaseScene extends Scene {
   create() {
     // Call the resize so the game resizes correctly on scene start
     this.sys.game.events.on(
-      "resize",
+      'resize',
       () => this.resizeApp(this.sys.game.CONFIG),
       this
     );
@@ -23,26 +23,25 @@ class BaseScene extends Scene {
 
   resizeApp(config) {
     // Width-height-ratio of game resolution
-    // Replace 360 with your game width, and replace 640 with your game height
-    let game_ratio = config.width / config.height;
+    const game_ratio = config.width / config.height;
 
     // Make div full height of browser and keep the ratio of game resolution
-    let div = document.getElementById("phaser-app");
-    div.style.width = window.innerHeight * game_ratio + "px";
-    div.style.height = window.innerHeight + "px";
+    const div = document.getElementById('phaser-app');
+    div.style.width = window.innerHeight * game_ratio + 'px';
+    div.style.height = window.innerHeight + 'px';
 
     // Check if device DPI messes up the width-height-ratio
-    let canvas = document.getElementsByTagName("canvas")[0];
+    const canvas = document.getElementsByTagName('canvas')[0];
 
-    let dpi_w = parseInt(div.style.width) / canvas.width;
-    let dpi_h = parseInt(div.style.height) / canvas.height;
+    const dpi_w = parseInt(div.style.width) / canvas.width;
+    const dpi_h = parseInt(div.style.height) / canvas.height;
 
-    let height = window.innerHeight * (dpi_w / dpi_h);
-    let width = height * game_ratio;
+    const height = window.innerHeight * (dpi_w / dpi_h);
+    const width = height * game_ratio;
 
     // Scale canvas
-    canvas.style.width = width + "px";
-    canvas.style.height = height + "px";
+    canvas.style.width = width + 'px';
+    canvas.style.height = height + 'px';
   }
 }
 
