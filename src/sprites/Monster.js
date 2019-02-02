@@ -16,6 +16,8 @@ export default class Monster extends Entity {
     this.spr = super.create();
     this.spr.map(m => {
       m.life = 3;
+      m.setSize(16, 16, true);
+      m.body.offset.y = 7;
     });
     return this.spr;
   }

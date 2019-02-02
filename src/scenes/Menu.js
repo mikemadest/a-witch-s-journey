@@ -153,8 +153,13 @@ class Menu extends BaseScene {
    * goPlay - launch next scene
    */
   goPlay() {
-    //this.menuMusic.stop();
-    this.scene.start('Intro', { music: this.menuMusic });
+    const skipIntro = true;
+    if (skipIntro) {
+      this.menuMusic.stop();
+      this.scene.start('Game');
+    } else {
+      this.scene.start('Intro', { music: this.menuMusic });
+    }
   }
 }
 

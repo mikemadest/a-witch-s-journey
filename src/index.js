@@ -22,7 +22,7 @@ if (ratio > 0.6) {
 const config = {
   type: Phaser.AUTO,
   parent: 'phaser-app',
-  title: "A Witch's Journey",
+  title: 'A Witch\'s Journey',
   url: '',
   width: width,
   height: height,

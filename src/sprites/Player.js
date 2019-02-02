@@ -23,9 +23,9 @@ export default class Player extends Entity {
     this.spr.setDepth(1);
     this.spr.score = 0;
     this.spr.life = 3;
-    this.spr.speed = 60;
-    this.spr.setSize(16, 12, true);
-    this.spr.body.offset.y = 7;
+    this.spr.speed = 80;
+    this.spr.setSize(16, 20, true);
+    this.spr.body.offset.y = 2;
     this.createLifeBar();
     this.createScoreText();
     return this.spr;

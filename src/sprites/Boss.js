@@ -15,6 +15,8 @@ export default class Boss extends Monster {
   create() {
     this.spr = super.create();
     this.spr = this.spr ? this.spr[0] : {};
+    this.spr.setSize(20, 24, true);
+    this.spr.body.offset.y = 7;
     return this.spr;
   }
 }
