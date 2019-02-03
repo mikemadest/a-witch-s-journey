@@ -28,10 +28,6 @@ class Game extends BaseScene {
     );
   }
 
-
-
-
-
   /**
    * Create level, place living beings and items
    */
@@ -98,10 +94,8 @@ class Game extends BaseScene {
       this.layers['details'],
       fireball => this.explodeOnContact(fireball)
     );
-    this.physics.add.collider(
-      this.fireballs,
-      this.layers['world'],
-      fireball => this.explodeOnContact(fireball)
+    this.physics.add.collider(this.fireballs, this.layers['world'], fireball =>
+      this.explodeOnContact(fireball)
     );
 
     // destroy fireballs reaching the boundaries
@@ -114,6 +108,8 @@ class Game extends BaseScene {
 
     // pretty basic, need to make it reusable
     this.handleCollisions();
+    this.handleMonsters();
+    this.handleBoss();
     this.showQuest();
 
     // mouse / touch controls
@@ -149,6 +145,8 @@ class Game extends BaseScene {
    */
   update(time, delta) {
     this.creatures['player'].entity.update(this.pointerDownMove);
+    this.creatures['boss'].entity.update();
+    this.creatures['monster1'].entity.update();
   }
 
   shutdown() {
@@ -437,11 +435,11 @@ class Game extends BaseScene {
       .setAlpha(0.75)
       .setDepth(20);
 
-      this.layers['background'].renderDebug(graphics, {
-        tileColor: null, // Color of non-colliding tiles
-        collidingTileColor: new Phaser.Display.Color(243, 134, 48, 255), // Color of colliding tiles
-        faceColor: new Phaser.Display.Color(40, 39, 37, 255), // Color of colliding face edges
-      });
+    this.layers['background'].renderDebug(graphics, {
+      tileColor: null, // Color of non-colliding tiles
+      collidingTileColor: new Phaser.Display.Color(243, 134, 48, 255), // Color of colliding tiles
+      faceColor: new Phaser.Display.Color(40, 39, 37, 255), // Color of colliding face edges
+    });
 
     this.layers['world'].renderDebug(graphics, {
       tileColor: null, // Color of non-colliding tiles
@@ -456,30 +454,84 @@ class Game extends BaseScene {
   }
 
   /**
-   * Manage collision : creature taking dammage, etc.
+   * Create boss movements and reaction to player
+   *
+   * Start with same behaviour as monsters
    */
-  handleCollisions() {
+  handleBoss() {
+    // monster touch damage player
     this.physics.add.collider(
       this.creatures['player'].spr,
-      this.layers['background']
-    );
-    this.physics.add.collider(
-      this.creatures['player'].spr,
-      this.layers['world']
-    );
-    this.physics.add.collider(
-      this.creatures['player'].spr,
-      this.layers['details']
-    );
-    this.physics.add.collider(
-      this.creatures['player'].spr,
-      this.creatures['grandma'].spr
-    );
-    this.physics.add.collider(
-      this.creatures['player'].spr,
-      this.creatures['aryl'].spr
+      this.creatures['boss'].spr,
+      this.dammagePlayer,
+      null,
+      this
     );
 
+    // monster get damaged by fireballs
+    this.physics.add.overlap(
+      this.creatures['boss'].spr,
+      this.fireballs,
+      (boss, fireball) => {
+        fireball.destroy();
+        this.sound.play('damage');
+        this.creatures['boss'].entity.takeDamage(boss, this.enemyDeath);
+      },
+      null,
+      this
+    );
+
+    this.creatures['boss'].spr.setVelocityX(-20);
+
+    this.physics.add.collider(this.creatures['boss'].spr, [
+      this.layers['background'],
+      this.layers['world'],
+      this.layers['details'],
+      this.enemyWalls,
+    ]);
+
+    // boss detect player and attack him
+
+    const detectPlayer = this.map.filterObjects(
+      'objects',
+      obj => obj.type === 'bossDetectPlayer'
+    );
+
+    this.detectPlayer = this.physics.add.group();
+    detectPlayer.forEach(l => {
+      const detection = this.add.rectangle(l.x, l.y, l.width, l.height);
+      detection.setStrokeStyle(4, 0xefc53f);
+      detection.setOrigin(0, 0).setAlpha(0.5);
+      detection.name = l.name;
+      this.detectPlayer.add(detection);
+    });
+
+    let zoneEntered = false;
+    this.physics.add.overlap(
+      this.creatures['player'].spr,
+      this.detectPlayer,
+      (player, detectZone) => {
+        if (!zoneEntered && detectZone.name === 'bossDetectPlayer') {
+            zoneEntered = true;
+            this.creatures['boss'].entity.attack(this.creatures['player'].spr);
+
+        } else if (zoneEntered && detectZone.name === 'bossDetectPlayerOut') {
+          zoneEntered = false;
+          this.creatures['boss'].entity.stopAttack();
+          this.creatures['boss'].spr.setVelocityX(-20);
+        }
+
+      }
+    );
+  }
+
+  /**
+   * Initialize monsters movements
+   *
+   * For now, they just bounce around
+   **/
+  handleMonsters() {
+    // monster touch damage player
     this.physics.add.collider(
       this.creatures['player'].spr,
       this.creatures['monster1'].spr,
@@ -488,6 +540,7 @@ class Game extends BaseScene {
       this
     );
 
+    // monster get damaged by fireballs
     this.physics.add.overlap(
       this.creatures['monster1'].spr,
       this.fireballs,
@@ -500,30 +553,49 @@ class Game extends BaseScene {
       this
     );
 
+    // building walls to keep monsters inside
+    const limits = this.map.filterObjects(
+      'objects',
+      obj => obj.name === 'monsterLimits'
+    );
+    this.enemyWalls = this.physics.add.group();
+    limits.forEach(l => {
+      const wall = this.add.rectangle(l.x, l.y, l.width, l.height);
+      //wall.setStrokeStyle(4, 0xefc53f);
+      wall.setOrigin(0, 0).setAlpha(0.5);
+      this.enemyWalls.add(wall);
+      this.physics.add.existing(wall);
+      wall.body.immovable = true;
+      wall.body.setImmovable(true);
+    });
+    this.creatures['monster1'].spr.map(m =>
+      m.setVelocityX(40).setVelocityY(40)
+    );
+
+    this.physics.add.collider(this.creatures['monster1'].spr, [
+      this.layers['background'],
+      this.layers['world'],
+      this.layers['details'],
+      this.enemyWalls,
+    ]);
+  }
+
+  /**
+   * Manage collision : creature taking dammage, etc.
+   */
+  handleCollisions() {
+    this.physics.add.collider(this.creatures['player'].spr, [
+      this.layers['background'],
+      this.layers['world'],
+      this.layers['details'],
+      this.creatures['grandma'].spr,
+      this.creatures['aryl'].spr,
+    ]);
+
     this.physics.add.collider(
       this.creatures['player'].spr,
       this.creatures['oldman'].spr,
       this.returnQuest,
-      null,
-      this
-    );
-
-    this.physics.add.collider(
-      this.creatures['player'].spr,
-      this.creatures['boss'].spr,
-      this.dammagePlayer,
-      null,
-      this
-    );
-
-    this.physics.add.overlap(
-      this.creatures['boss'].spr,
-      this.fireballs,
-      (boss, fireball) => {
-        fireball.destroy();
-        this.sound.play('damage');
-        this.creatures['boss'].entity.takeDamage(boss, this.enemyDeath);
-      },
       null,
       this
     );
@@ -632,7 +704,6 @@ class Game extends BaseScene {
     return entity;
   }
 
-
   loadZoneElements() {
     this.layers = {};
     this.map = this.add.tilemap('level1');
@@ -658,18 +729,14 @@ class Game extends BaseScene {
       0,
       0
     ); // .setDepth(2)
-    this.layers['details'] = this.map.createDynamicLayer(
-      'details',
-      backgroundTile,
-      0,
-      0
-    ).setDepth(2);
+    this.layers['details'] = this.map
+      .createDynamicLayer('details', backgroundTile, 0, 0)
+      .setDepth(2);
     this.sys.animatedTiles.init(this.map);
     this.layers['background'].setCollisionByProperty({ collide: true });
     this.layers['world'].setCollisionByProperty({ collide: true });
     this.layers['details'].setCollisionByProperty({ collide: true });
   }
-
 
   /**
    * Create sprites for everything with "AI" or user control
@@ -730,6 +797,9 @@ class Game extends BaseScene {
   dammagePlayer(player, enemy) {
     this.sound.play('damage');
     this.creatures['player'].entity.takeDamage(player);
+    //this.cameras.main.shake(200);
+    this.cameras.main.flash(200);
+    //this.cameras.main.fade(200);
 
     // Knocks back enemy after colliding
     if (enemy.body.touching.left) {

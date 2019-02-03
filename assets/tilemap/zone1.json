@@ -131,8 +131,8 @@
                  "type":"coin",
                  "visible":true,
                  "width":16,
-                 "x":612,
-                 "y":379
+                 "x":584,
+                 "y":375.5
                 }, 
                 {
                  "gid":1642,
@@ -155,8 +155,8 @@
                  "type":"playerSpawn",
                  "visible":true,
                  "width":0,
-                 "x":165,
-                 "y":743.667
+                 "x":466.5,
+                 "y":368.167
                 }, 
                 {
                  "height":0,
@@ -203,8 +203,8 @@
                  "type":"monsterSpawn",
                  "visible":true,
                  "width":0,
-                 "x":235,
-                 "y":275
+                 "x":235.5,
+                 "y":258
                 }, 
                 {
                  "height":0,
@@ -215,8 +215,8 @@
                  "type":"monsterSpawn",
                  "visible":true,
                  "width":0,
-                 "x":572,
-                 "y":371
+                 "x":559.5,
+                 "y":345.5
                 }, 
                 {
                  "height":0,
@@ -241,14 +241,212 @@
                  "width":0,
                  "x":760,
                  "y":265
+                }, 
+                {
+                 "height":83.5,
+                 "id":52,
+                 "name":"monsterLimits",
+                 "rotation":0,
+                 "type":"monsterLimits",
+                 "visible":true,
+                 "width":4,
+                 "x":282,
+                 "y":200.5
+                }, 
+                {
+                 "height":116.5,
+                 "id":57,
+                 "name":"bossDetectPlayer",
+                 "rotation":0,
+                 "type":"bossDetectPlayer",
+                 "visible":true,
+                 "width":196,
+                 "x":623,
+                 "y":206
+                }, 
+                {
+                 "height":1,
+                 "id":59,
+                 "name":"monsterLimits",
+                 "rotation":0,
+                 "type":"monsterLimits",
+                 "visible":true,
+                 "width":230,
+                 "x":496,
+                 "y":674.5
+                }, 
+                {
+                 "height":82.5,
+                 "id":60,
+                 "name":"monsterLimits",
+                 "rotation":0,
+                 "type":"monsterLimits",
+                 "visible":true,
+                 "width":2.5,
+                 "x":176.5,
+                 "y":202.5
+                }, 
+                {
+                 "height":4,
+                 "id":62,
+                 "name":"monsterLimits",
+                 "rotation":0,
+                 "type":"monsterLimits",
+                 "visible":true,
+                 "width":111.5,
+                 "x":174.5,
+                 "y":195
+                }, 
+                {
+                 "height":4,
+                 "id":63,
+                 "name":"monsterLimits",
+                 "rotation":0,
+                 "type":"monsterLimits",
+                 "visible":true,
+                 "width":109.5,
+                 "x":175.5,
+                 "y":286.5
+                }, 
+                {
+                 "height":2,
+                 "id":66,
+                 "name":"monsterLimits",
+                 "rotation":0,
+                 "type":"monsterLimits",
+                 "visible":true,
+                 "width":123,
+                 "x":530.5,
+                 "y":291
+                }, 
+                {
+                 "height":150.5,
+                 "id":67,
+                 "name":"monsterLimits",
+                 "rotation":0,
+                 "type":"monsterLimits",
+                 "visible":true,
+                 "width":4,
+                 "x":530.5,
+                 "y":294
+                }, 
+                {
+                 "height":150,
+                 "id":68,
+                 "name":"monsterLimits",
+                 "rotation":0,
+                 "type":"monsterLimits",
+                 "visible":true,
+                 "width":4,
+                 "x":651.5,
+                 "y":295.5
+                }, 
+                {
+                 "height":3,
+                 "id":69,
+                 "name":"monsterLimits",
+                 "rotation":0,
+                 "type":"monsterLimits",
+                 "visible":true,
+                 "width":122,
+                 "x":531.5,
+                 "y":447.5
+                }, 
+                {
+                 "height":123,
+                 "id":70,
+                 "name":"monsterLimits",
+                 "rotation":0,
+                 "type":"monsterLimits",
+                 "visible":true,
+                 "width":1.5,
+                 "x":492.5,
+                 "y":675
+                }, 
+                {
+                 "height":121,
+                 "id":72,
+                 "name":"monsterLimits",
+                 "rotation":0,
+                 "type":"monsterLimits",
+                 "visible":true,
+                 "width":3.5,
+                 "x":725.5,
+                 "y":676.5
+                }, 
+                {
+                 "height":66,
+                 "id":73,
+                 "name":"monsterLimits",
+                 "rotation":0,
+                 "type":"monsterLimits",
+                 "visible":true,
+                 "width":2.5,
+                 "x":675.5,
+                 "y":238.5
+                }, 
+                {
+                 "height":63.5,
+                 "id":74,
+                 "name":"monsterLimits",
+                 "rotation":0,
+                 "type":"monsterLimits",
+                 "visible":true,
+                 "width":3,
+                 "x":792,
+                 "y":242
+                }, 
+                {
+                 "height":26,
+                 "id":75,
+                 "name":"bossDetectPlayerOut",
+                 "rotation":0,
+                 "type":"bossDetectPlayer",
+                 "visible":true,
+                 "width":298.5,
+                 "x":574,
+                 "y":165
+                }, 
+                {
+                 "height":137,
+                 "id":76,
+                 "name":"bossDetectPlayerOut",
+                 "rotation":0,
+                 "type":"bossDetectPlayer",
+                 "visible":true,
+                 "width":39,
+                 "x":563.5,
+                 "y":195.5
+                }, 
+                {
+                 "height":23.5,
+                 "id":77,
+                 "name":"bossDetectPlayerOut",
+                 "rotation":0,
+                 "type":"bossDetectPlayer",
+                 "visible":true,
+                 "width":264.5,
+                 "x":573,
+                 "y":333.5
+                }, 
+                {
+                 "height":155,
+                 "id":79,
+                 "name":"bossDetectPlayerOut",
+                 "rotation":0,
+                 "type":"bossDetectPlayer",
+                 "visible":true,
+                 "width":42,
+                 "x":838,
+                 "y":192
                 }],
          "opacity":1,
          "type":"objectgroup",
-         "visible":false,
+         "visible":true,
          "x":0,
          "y":0
         }],
- "nextobjectid":52,
+ "nextobjectid":80,
  "orientation":"orthogonal",
  "renderorder":"right-down",
  "tiledversion":"1.1.6",
