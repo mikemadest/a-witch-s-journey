@@ -1971,6 +1971,11 @@ escope@^3.6.0:
     esrecurse "^4.1.0"
     estraverse "^4.1.1"
 
+eslint-plugin-es5@^1.3.1:
+  version "1.3.1"
+  resolved "https://registry.yarnpkg.com/eslint-plugin-es5/-/eslint-plugin-es5-1.3.1.tgz#4938431abdd585005db9cf67b42b64463c0acd18"
+  integrity sha512-2oq0R/3XoAsiMwllwsHmnk0gA7+KSvRHUAiJ7Pa/iKrClywVd1q/G7LDZHXU5YD+9kVNxlK155ElXrmX8uLW8A==
+
 eslint-scope@^4.0.0:
   version "4.0.0"
   resolved "https://registry.yarnpkg.com/eslint-scope/-/eslint-scope-4.0.0.tgz#50bf3071e9338bcdc43331794a0cb533f0136172"

@@ -28,14 +28,12 @@ const config = {
   height: height,
   physics: {
     default: 'arcade',
-    arcade: {
-      gravity: { y: 0 },
-    },
+    arcade: {gravity: { y: 0 }}
   },
-  scene: [Boot, Preload, Menu, Intro, Game, GameOver],
+  scene: [ Boot, Preload, Menu, Intro, Game, GameOver ],
   pixelArt: true,
   roundPixels: true,
-  backgroundColor: '0x000000',
+  backgroundColor: '0x000000'
 };
 
 const game = new Phaser.Game(config);
@@ -51,11 +49,8 @@ game.CONFIG = {
   language: game.LANGUAGE,
   centerX: Math.round(config.width / 2),
   centerY: Math.round(config.height / 2),
-  tile: 32,
+  tile: 32
 };
-
-// Sound
-game.sound_on = true;
 
 window.onresize = function() {
   game.events.emit('resize');

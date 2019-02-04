@@ -2,7 +2,6 @@
  *
  **/
 import Menu from './Menu';
-import Text from '../prefabs/Text';
 
 class Intro extends Menu {
   constructor() {
@@ -43,14 +42,14 @@ class Intro extends Menu {
           fill: '#fff',
           fontSize: '10px',
           fontFamily: 'Arial, sans serif',
-          wordWrap: { width: this.maxWidth, useAdvancedWrap: true },
+          wordWrap: { width: this.maxWidth, useAdvancedWrap: true }
         }
       )
       .setOrigin(0.5);
     this.storySteps = [
       this.textsData['STORY_1'],
       this.textsData['STORY_2'],
-      this.textsData['STORY_3'],
+      this.textsData['STORY_3']
     ];
 
     this.displayIntroText(0);
@@ -68,7 +67,7 @@ class Intro extends Menu {
         fill: '#fff',
         fontSize: '20px',
         fontFamily: 'Arial, sans serif',
-        wordWrap: { width: this.maxWidth, useAdvancedWrap: true },
+        wordWrap: { width: this.maxWidth, useAdvancedWrap: true }
       })
       .setOrigin(0.5)
       .setAlpha(0);
@@ -81,7 +80,7 @@ class Intro extends Menu {
       alpha: 1,
       duration: 1000,
       ease: 'Linear',
-      delay: 200,
+      delay: 200
     };
     if (index === 0) {
       tweenConfig.onComplete = () => this.showStartText(0, buttonTextCode);
@@ -113,12 +112,12 @@ class Intro extends Menu {
       alpha: 0,
       duration: 1500,
       ease: 'Cubic',
-      easeParams: [1, 1],
+      easeParams: [ 1, 1 ],
       delay: 0,
       onComplete: () => {
         this.menuMusic.stop();
         this.scene.start('Game');
-      },
+      }
     });
   }
 }

@@ -2,6 +2,7 @@
  *
  **/
 import BaseScene from './BaseScene';
+import Text from '../prefabs/Text';
 
 class GameOver extends BaseScene {
   constructor() {
@@ -16,7 +17,6 @@ class GameOver extends BaseScene {
     super.create();
     this.createBackground();
     this.textsData = this.cache.json.get('textsData');
-
     this.title = new Text(
       this,
       this.CONFIG.centerX,
@@ -26,7 +26,7 @@ class GameOver extends BaseScene {
       0.5
     );
 
-    this.txt_progress = new Text(
+    this.txtProgress = new Text(
       this,
       this.CONFIG.centerX,
       this.CONFIG.centerY + 100,
@@ -50,13 +50,13 @@ class GameOver extends BaseScene {
   }
 
   createKeyboardInput() {
-    function handleKeyUp(e) {
+    const handleKeyUp = e => {
       switch (e.code) {
         case 'Enter':
           this.goPlay();
           break;
       }
-    }
+    };
 
     this.input.keyboard.on('keyup', handleKeyUp, this);
   }

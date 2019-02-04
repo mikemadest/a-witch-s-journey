@@ -41,7 +41,7 @@ class Game extends BaseScene {
     this.playerHasMagicStaff = false;
 
     // main tile map
-    this.loadZoneElements();
+    this.loadLevelElements();
     this.createWorldAnimations();
     this.createWorldInhabitants();
     this.gameMusic = this.sound.add('ambiance');
@@ -68,7 +68,7 @@ class Game extends BaseScene {
     // basic keyboard control
     this.cursors = {
       ...this.input.keyboard.createCursorKeys(),
-      ...this.input.keyboard.addKeys('Z,S,Q,D'),
+      ...this.input.keyboard.addKeys('Z,S,Q,D')
     };
 
     // space for action
@@ -96,6 +96,18 @@ class Game extends BaseScene {
     );
     this.physics.add.collider(this.fireballs, this.layers['world'], fireball =>
       this.explodeOnContact(fireball)
+    );
+
+    this.enemyFireballs = this.physics.add.group();
+    this.physics.add.collider(
+      this.enemyFireballs,
+      this.layers['details'],
+      fireball => this.explodeOnContact(fireball)
+    );
+    this.physics.add.collider(
+      this.enemyFireballs,
+      this.layers['world'],
+      fireball => this.explodeOnContact(fireball)
     );
 
     // destroy fireballs reaching the boundaries
@@ -131,7 +143,7 @@ class Game extends BaseScene {
     });
 
     // debug
-    //this.showDebugInfos();
+    // this.showDebugInfos();
 
     // Listen for this scene exit
     this.events.once('shutdown', this.shutdown, this);
@@ -143,7 +155,7 @@ class Game extends BaseScene {
    * @param time
    * @param delta
    */
-  update(time, delta) {
+  update() {
     this.creatures['player'].entity.update(this.pointerDownMove);
     this.creatures['boss'].entity.update();
     this.creatures['monster1'].entity.update();
@@ -233,7 +245,7 @@ class Game extends BaseScene {
       .setAlpha(0)
       .setDepth(9);
 
-    return [questText, boxBg, boxBorder];
+    return [ questText, boxBg, boxBorder ];
   }
 
   /**
@@ -248,7 +260,7 @@ class Game extends BaseScene {
       alpha: 1,
       duration: 1000,
       ease: 'Cubic',
-      easeParams: [1, 1],
+      easeParams: [ 1, 1 ]
     });
     this.waitInputToContinue(() => {
       this.waitInputToContinue(false);
@@ -259,11 +271,11 @@ class Game extends BaseScene {
         alpha: 0,
         duration: 900,
         ease: 'Cubic',
-        easeParams: [1, 1],
+        easeParams: [ 1, 1 ],
         onComplete: () => {
           tween.stop();
           this.showQuestStatus();
-        },
+        }
       });
     });
   }
@@ -279,7 +291,7 @@ class Game extends BaseScene {
     // coins : this is for the quest, will move to quest manager
     this.coins = this.map.createFromObjects('objects', 1576, {
       key: 'worldAnim',
-      frame: 'coin-1',
+      frame: 'coin-1'
     });
     this.coins.forEach(c => this.physics.add.existing(c)); // add physics
     this.anims.play('spr-coin', this.coins);
@@ -313,8 +325,8 @@ class Game extends BaseScene {
       alpha: 1,
       duration: 1000,
       ease: 'Cubic',
-      easeParams: [1, 1],
-      delay: 0,
+      easeParams: [ 1, 1 ],
+      delay: 0
     });
   }
 
@@ -356,7 +368,7 @@ class Game extends BaseScene {
         callback: () => {
           this.statusModal[0].setText(this.textsData['QUEST_SUCCESS2']);
         },
-        callbackScope: this,
+        callbackScope: this
       });
     }
   }
@@ -378,8 +390,8 @@ class Game extends BaseScene {
       alpha: 0,
       duration: 1000,
       ease: 'Cubic',
-      easeParams: [1, 1],
-      delay: 0,
+      easeParams: [ 1, 1 ],
+      delay: 0
     });
 
     const modalElements = this.createModal(this.textsData['QUEST_ENDED']);
@@ -388,7 +400,7 @@ class Game extends BaseScene {
       alpha: 1,
       duration: 1000,
       ease: 'Cubic',
-      easeParams: [1, 1],
+      easeParams: [ 1, 1 ]
     });
 
     this.waitInputToContinue(() => {
@@ -407,7 +419,10 @@ class Game extends BaseScene {
    */
   showStaffTuto(modalElements) {
     const w = (0.95 * this.CONFIG.width) / this.cameras.main.zoom;
-    modalElements[0].setText(this.textsData['TUTO_STAFF_MOBILE']);
+    const tuto = this.game.device.os.desktop
+      ? 'TUTO_STAFF_DESKTOP'
+      : 'TUTO_STAFF_MOBILE';
+    modalElements[0].setText(this.textsData[tuto]);
     modalElements[1].clear().fillRect(0, 0, w, 72);
     modalElements[2]
       .clear()
@@ -420,7 +435,7 @@ class Game extends BaseScene {
         alpha: 0,
         duration: 900,
         ease: 'Cubic',
-        easeParams: [1, 1],
+        easeParams: [ 1, 1 ]
       });
     });
   }
@@ -438,18 +453,18 @@ class Game extends BaseScene {
     this.layers['background'].renderDebug(graphics, {
       tileColor: null, // Color of non-colliding tiles
       collidingTileColor: new Phaser.Display.Color(243, 134, 48, 255), // Color of colliding tiles
-      faceColor: new Phaser.Display.Color(40, 39, 37, 255), // Color of colliding face edges
+      faceColor: new Phaser.Display.Color(40, 39, 37, 255) // Color of colliding face edges
     });
 
     this.layers['world'].renderDebug(graphics, {
       tileColor: null, // Color of non-colliding tiles
       collidingTileColor: new Phaser.Display.Color(243, 134, 48, 255), // Color of colliding tiles
-      faceColor: new Phaser.Display.Color(40, 39, 37, 255), // Color of colliding face edges
+      faceColor: new Phaser.Display.Color(40, 39, 37, 255) // Color of colliding face edges
     });
     this.layers['details'].renderDebug(graphics, {
       tileColor: null, // Color of non-colliding tiles
       collidingTileColor: new Phaser.Display.Color(243, 134, 48, 255), // Color of colliding tiles
-      faceColor: new Phaser.Display.Color(40, 39, 37, 255), // Color of colliding face edges
+      faceColor: new Phaser.Display.Color(40, 39, 37, 255) // Color of colliding face edges
     });
   }
 
@@ -464,6 +479,19 @@ class Game extends BaseScene {
       this.creatures['player'].spr,
       this.creatures['boss'].spr,
       this.dammagePlayer,
+      null,
+      this
+    );
+
+    // monster get damaged by fireballs
+    this.physics.add.overlap(
+      this.creatures['player'].spr,
+      this.enemyFireballs,
+      (player, fireball) => {
+        fireball.destroy();
+        this.sound.play('damage');
+        this.dammagePlayer(player, null);
+      },
       null,
       this
     );
@@ -487,7 +515,7 @@ class Game extends BaseScene {
       this.layers['background'],
       this.layers['world'],
       this.layers['details'],
-      this.enemyWalls,
+      this.enemyWalls
     ]);
 
     // boss detect player and attack him
@@ -500,27 +528,26 @@ class Game extends BaseScene {
     this.detectPlayer = this.physics.add.group();
     detectPlayer.forEach(l => {
       const detection = this.add.rectangle(l.x, l.y, l.width, l.height);
-      //detection.setStrokeStyle(4, 0xefc53f);
+
+      // detection.setStrokeStyle(1, 0xefc53f);
       detection.setOrigin(0, 0).setAlpha(0.5);
       detection.name = l.name;
       this.detectPlayer.add(detection);
     });
 
-    let zoneEntered = false;
+    const playerSprite = this.creatures['player'].spr;
     this.physics.add.overlap(
-      this.creatures['player'].spr,
+      playerSprite,
       this.detectPlayer,
       (player, detectZone) => {
-        if (!zoneEntered && detectZone.name === 'bossDetectPlayer') {
-            zoneEntered = true;
-            this.creatures['boss'].entity.attack(this.creatures['player'].spr);
-
-        } else if (zoneEntered && detectZone.name === 'bossDetectPlayerOut') {
-          zoneEntered = false;
+        if (detectZone.name === 'bossDetectPlayer') {
+          this.creatures['boss'].entity.startAttack(
+            playerSprite,
+            this.enemyFireballs
+          );
+        } else if (detectZone.name === 'bossDetectPlayerOut') {
           this.creatures['boss'].entity.stopAttack();
-          //this.creatures['boss'].spr.setVelocityX(-20);
         }
-
       }
     );
   }
@@ -561,7 +588,8 @@ class Game extends BaseScene {
     this.enemyWalls = this.physics.add.group();
     limits.forEach(l => {
       const wall = this.add.rectangle(l.x, l.y, l.width, l.height);
-      //wall.setStrokeStyle(4, 0xefc53f);
+
+      // wall.setStrokeStyle(4, 0xefc53f);
       wall.setOrigin(0, 0).setAlpha(0.5);
       this.enemyWalls.add(wall);
       this.physics.add.existing(wall);
@@ -576,7 +604,7 @@ class Game extends BaseScene {
       this.layers['background'],
       this.layers['world'],
       this.layers['details'],
-      this.enemyWalls,
+      this.enemyWalls
     ]);
   }
 
@@ -589,7 +617,7 @@ class Game extends BaseScene {
       this.layers['world'],
       this.layers['details'],
       this.creatures['grandma'].spr,
-      this.creatures['aryl'].spr,
+      this.creatures['aryl'].spr
     ]);
 
     this.physics.add.collider(
@@ -632,7 +660,7 @@ class Game extends BaseScene {
     }
 
     // create fireball and animate it
-    var fireball = this.fireballs
+    const fireball = this.fireballs
       .create(0, 0, 'worldAnim', 'fireball-1')
       .setScale(0.25, 0.25)
       .setVelocity(0);
@@ -704,7 +732,10 @@ class Game extends BaseScene {
     return entity;
   }
 
-  loadZoneElements() {
+  /**
+   * Load tilemap, monsters, pnj, player from spawn points
+   */
+  loadLevelElements() {
     this.layers = {};
     this.map = this.add.tilemap('level1');
     const backgroundTile = this.map.addTilesetImage(
@@ -715,8 +746,6 @@ class Game extends BaseScene {
       1,
       2
     );
-    //const objectsTile = this.map.addTilesetImage("objects", "objectsTile");
-    //const objectsLayer = this.map.createStaticLayer("objects", objectsTile);
     this.layers['background'] = this.map.createDynamicLayer(
       'background',
       backgroundTile,
@@ -728,7 +757,7 @@ class Game extends BaseScene {
       backgroundTile,
       0,
       0
-    ); // .setDepth(2)
+    );
     this.layers['details'] = this.map
       .createDynamicLayer('details', backgroundTile, 0, 0)
       .setDepth(2);
@@ -739,9 +768,7 @@ class Game extends BaseScene {
   }
 
   /**
-   * Create sprites for everything with "AI" or user control
-   *
-   * For now we use a hash table to reference them... not optimal
+   * Create sprites for pnj, monsters, boss and player
    */
   createWorldInhabitants() {
     this.creatures = {};
@@ -753,8 +780,6 @@ class Game extends BaseScene {
 
   /**
    * Create sprite for moving decoration like waterfall
-   *
-   * @note : This will be updated to an animated tile map
    */
   createWorldAnimations() {
     // little bubble to attract attention, may add an "Expression" entity later
@@ -772,7 +797,7 @@ class Game extends BaseScene {
       delay: 500,
       callback: () => (this.talking.visible = !this.talking.visible),
       callbackScope: this,
-      repeat: 3,
+      repeat: 3
     });
   }
 
@@ -797,29 +822,33 @@ class Game extends BaseScene {
   dammagePlayer(player, enemy) {
     this.sound.play('damage');
     this.creatures['player'].entity.takeDamage(player);
-    //this.cameras.main.shake(200);
+
+    // this.cameras.main.shake(200);
     this.cameras.main.flash(200);
-    //this.cameras.main.fade(200);
+
+    // this.cameras.main.fade(200);
 
     // Knocks back enemy after colliding
-    if (enemy.body.touching.left) {
-      enemy.body.velocity.x = 150;
-    } else if (enemy.body.touching.right) {
-      enemy.body.velocity.x = -150;
-    } else if (enemy.body.touching.up) {
-      enemy.body.velocity.y = 150;
-    } else if (enemy.body.touching.down) {
-      enemy.body.velocity.y = -150;
-    }
+    if (enemy && enemy.body) {
+      if (enemy.body.touching.left) {
+        enemy.body.velocity.x = 150;
+      } else if (enemy.body.touching.right) {
+        enemy.body.velocity.x = -150;
+      } else if (enemy.body.touching.up) {
+        enemy.body.velocity.y = 150;
+      } else if (enemy.body.touching.down) {
+        enemy.body.velocity.y = -150;
+      }
 
-    this.time.addEvent({
-      delay: 150,
-      callback: () => {
-        enemy.body.setVelocity(0);
-      },
-      callbackScope: this,
-      repeat: 0,
-    });
+      this.time.addEvent({
+        delay: 150,
+        callback: () => {
+          enemy.body.setVelocity(0);
+        },
+        callbackScope: this,
+        repeat: 0
+      });
+    }
   }
 }
 

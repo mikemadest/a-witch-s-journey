@@ -23,6 +23,9 @@ export default class Monster extends Entity {
   }
 
   update() {
+    if (!this.spr || !this.spr.body) {
+      return;
+    }
     // no movement, stop animation / idle animation
     this.spr.forEach(m => {
       if (m.body.velocity.x === 0 && m.body.velocity.y === 0) {
@@ -35,13 +38,4 @@ export default class Monster extends Entity {
     });
   }
 
-  attack() {}
-
-  move() {}
-
-  refreshLife() {}
-
-  getHealing() {
-    //
-  }
 }

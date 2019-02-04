@@ -1,4 +1,4 @@
-import Entity from "./Entity";
+import Entity from './Entity';
 
 /**
  * Player class
@@ -16,7 +16,7 @@ export default class Player extends Entity {
   create() {
     this.spr = super.create();
     if (!this.spr || !this.spr[0]) {
-      console.error("Player creation was not possible");
+      console.error('Player creation was not possible');
       return {};
     }
     this.spr = this.spr[0];
@@ -48,7 +48,8 @@ export default class Player extends Entity {
     // no movement, stop animation / idle animation
     if (this.spr.body.velocity.x === 0 && this.spr.body.velocity.y === 0) {
       this.spr.anims.stop();
-      //this.spr.setFrame("hero-walkdown-1");
+
+      // this.spr.setFrame("hero-walkdown-1");
     }
   }
 
@@ -58,22 +59,22 @@ export default class Player extends Entity {
   handleKeyboardControls() {
     if (this.ctx.cursors.Q.isDown || this.ctx.cursors.left.isDown) {
       this.spr.setVelocityX(-this.spr.speed);
-      this.spr.anims.play("spr-hero-walkleft", true);
+      this.spr.anims.play('spr-hero-walkleft', true);
 
-    //
+      //
     } else if (this.ctx.cursors.D.isDown || this.ctx.cursors.right.isDown) {
       this.spr.setVelocityX(this.spr.speed);
-      this.spr.anims.play("spr-hero-walkright", true);
+      this.spr.anims.play('spr-hero-walkright', true);
     }
 
     if (this.ctx.cursors.S.isDown || this.ctx.cursors.down.isDown) {
       this.spr.setVelocityY(this.spr.speed);
-      this.spr.anims.play("spr-hero-walkdown", true);
+      this.spr.anims.play('spr-hero-walkdown', true);
 
-    //
+      //
     } else if (this.ctx.cursors.Z.isDown || this.ctx.cursors.up.isDown) {
       this.spr.setVelocityY(-this.spr.speed);
-      this.spr.anims.play("spr-hero-walkup", true);
+      this.spr.anims.play('spr-hero-walkup', true);
     }
   }
 
@@ -90,18 +91,15 @@ export default class Player extends Entity {
       const mostlyUpMove = Math.abs(diffY) > Math.abs(diffX);
       if (mostlyUpMove) {
         if (diffY > 0) {
-          this.spr.anims.play("spr-hero-walkdown", true);
+          this.spr.anims.play('spr-hero-walkdown', true);
         } else {
-          this.spr.anims.play("spr-hero-walkup", true);
+          this.spr.anims.play('spr-hero-walkup', true);
         }
+      } else if (diffX > 0) {
+        this.spr.anims.play('spr-hero-walkright', true);
       } else {
-        if (diffX > 0) {
-          this.spr.anims.play("spr-hero-walkright", true);
-        } else {
-          this.spr.anims.play("spr-hero-walkleft", true);
-        }
+        this.spr.anims.play('spr-hero-walkleft', true);
       }
-
     } else {
       return false;
     }
@@ -122,11 +120,11 @@ export default class Player extends Entity {
         lifePos.x + i * 20,
         lifePos.y,
         this.spriteCache,
-        "heart-1"
+        'heart-1'
       );
       tmp.setDepth(10); // UI depth
       tmp.setScrollFactor(0);
-      tmp.anims.play("spr-heart", true);
+      tmp.anims.play('spr-heart', true);
       this.lifeSprites.push(tmp);
     }
   }
@@ -137,9 +135,9 @@ export default class Player extends Entity {
    * @note : not really relevant here, more a POC than anything else...
    */
   createScoreText() {
-    this.scoreText = this.ctx.add.text(5, 5, "Score: 0", {
-      fontSize: "16px",
-      fill: "#fff"
+    this.scoreText = this.ctx.add.text(5, 5, 'Score: 0', {
+      fontSize: '16px',
+      fill: '#fff'
     });
     this.scoreText.setDepth(10); // UI depth
     this.scoreText.setScrollFactor(0);
@@ -158,7 +156,7 @@ export default class Player extends Entity {
    * Refresh score UI
    */
   refreshScore() {
-    this.scoreText.setText("Score: " + this.spr.score);
+    this.scoreText.setText('Score: ' + this.spr.score);
   }
 
   /**
@@ -177,10 +175,10 @@ export default class Player extends Entity {
    */
   isDead(entity, onDeath) {
     if (entity.life <= 0) {
-      if (typeof onDeath === "function") {
+      if (typeof onDeath === 'function') {
         onDeath.call(this.ctx);
       }
-      this.ctx.scene.start("GameOver");
+      this.ctx.scene.start('GameOver');
       return true;
     }
     return false;
