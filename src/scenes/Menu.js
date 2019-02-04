@@ -42,8 +42,8 @@ class Menu extends BaseScene {
       alpha: 1,
       duration: 4000,
       ease: 'Cubic',
-      easeParams: [1, 1],
-      delay: 200,
+      easeParams: [ 1, 1 ],
+      delay: 200
     });
 
     this.add
@@ -94,10 +94,10 @@ class Menu extends BaseScene {
       textCode = 'GAME_START';
     }
 
-    if (this.txt_progress) {
-      this.txt_progress.setText(this.textsData[textCode]);
+    if (this.txtProgress) {
+      this.txtProgress.setText(this.textsData[textCode]);
     } else {
-      this.txt_progress = new Text(
+      this.txtProgress = new Text(
         this,
         this.CONFIG.centerX,
         this.CONFIG.centerY + 100,
@@ -105,23 +105,23 @@ class Menu extends BaseScene {
         16,
         { x: 0.5, y: 1 }
       );
-      this.txt_progress.obj.setAlpha(0);
+      this.txtProgress.obj.setAlpha(0);
 
       this.time.addEvent({
         delay: delay,
         callback: () => {
           this.tweens.add({
-            targets: this.txt_progress.obj,
+            targets: this.txtProgress.obj,
             alpha: 1,
             duration: 1500,
             ease: 'Linear',
-            easeParams: [3.5],
+            easeParams: [ 3.5 ],
             yoyo: true,
-            loop: -1,
+            loop: -1
           });
         },
         callbackScope: this,
-        repeat: 0,
+        repeat: 0
       });
     }
   }
@@ -153,8 +153,13 @@ class Menu extends BaseScene {
    * goPlay - launch next scene
    */
   goPlay() {
-    //this.menuMusic.stop();
-    this.scene.start('Intro', { music: this.menuMusic });
+    const skipIntro = true;
+    if (skipIntro) {
+      this.menuMusic.stop();
+      this.scene.start('Game');
+    } else {
+      this.scene.start('Intro', { music: this.menuMusic });
+    }
   }
 }
 

@@ -1,10 +1,10 @@
-import BaseScene from "./BaseScene";
-import Entity from "../sprites/Entity";
-import Boss from "../sprites/Boss";
-import Monster from "../sprites/Monster";
-import Player from "../sprites/Player";
-import Pnj from "../sprites/Pnj";
-import AnimatedTiles from "phaser-animated-tiles/dist/AnimatedTiles.js";
+import BaseScene from './BaseScene';
+import Entity from '../sprites/Entity';
+import Boss from '../sprites/Boss';
+import Monster from '../sprites/Monster';
+import Player from '../sprites/Player';
+import Pnj from '../sprites/Pnj';
+import AnimatedTiles from 'phaser-animated-tiles/dist/AnimatedTiles.js';
 
 /**
  * Just a short game level :
@@ -12,7 +12,7 @@ import AnimatedTiles from "phaser-animated-tiles/dist/AnimatedTiles.js";
  **/
 class Game extends BaseScene {
   constructor() {
-    super({ key: "Game", active: false });
+    super({ key: 'Game', active: false });
   }
 
   init() {
@@ -21,10 +21,10 @@ class Game extends BaseScene {
 
   preload() {
     this.load.scenePlugin(
-      "AnimatedTiles",
+      'AnimatedTiles',
       AnimatedTiles,
-      "animatedTiles",
-      "animatedTiles"
+      'animatedTiles',
+      'animatedTiles'
     );
   }
 
@@ -33,62 +33,18 @@ class Game extends BaseScene {
    */
   create() {
     super.create();
-    this.spritesData = this.cache.json.get("spritesData");
-    this.textsData = this.cache.json.get("textsData");
-    this.stylesData = this.cache.json.get("stylesData");
+    this.spritesData = this.cache.json.get('spritesData');
+    this.textsData = this.cache.json.get('textsData');
+    this.stylesData = this.cache.json.get('stylesData');
 
     // just to get it working quickly before having a real spell system
     this.playerHasMagicStaff = false;
 
     // main tile map
-    this.layers = {};
-    this.map = this.add.tilemap("level1");
-    const backgroundTile = this.map.addTilesetImage(
-      "overworld",
-      "gameTile",
-      16,
-      16,
-      1,
-      2
-    );
-    //const objectsTile = this.map.addTilesetImage("objects", "objectsTile");
-    //const objectsLayer = this.map.createStaticLayer("objects", objectsTile);
-    this.layers["belowLayer"] = this.map.createDynamicLayer(
-      "belowLayer",
-      backgroundTile,
-      0,
-      0
-    );
-    this.layers["worldLayer"] = this.map.createDynamicLayer(
-      "worldLayer",
-      backgroundTile,
-      0,
-      0
-    );
-    this.layers["belowdetails"] = this.map.createDynamicLayer(
-      "belowdetails",
-      backgroundTile,
-      0,
-      0
-    );
-    this.layers["detailObstacles"] = this.map.createDynamicLayer(
-      "detailObstacles",
-      backgroundTile,
-      0,
-      0
-    );
-    this.layers["aboveLayer"] = this.map.createDynamicLayer(
-      "aboveLayer",
-      backgroundTile,
-      0,
-      0
-    );
-
-    this.layers["aboveLayer"].setDepth(2);
-    this.sys.animatedTiles.init(this.map);
+    this.loadLevelElements();
     this.createWorldAnimations();
     this.createWorldInhabitants();
-    this.gameMusic = this.sound.add("ambiance");
+    this.gameMusic = this.sound.add('ambiance');
     this.gameMusic.setVolume(0.1);
     this.gameMusic.play();
 
@@ -107,85 +63,90 @@ class Game extends BaseScene {
       this.map.widthInPixels,
       this.map.heightInPixels
     );
-
-    // placing camera : we use a dolly to round position
-    // and avoid artefacts when moving
-    this.cameraDolly = new Phaser.Geom.Point(
-      this.creatures["player"].spr.x,
-      this.creatures["player"].spr.y
-    );
-    this.cameras.main.startFollow(this.cameraDolly);
+    this.cameras.main.startFollow(this.creatures['player'].spr, true, 0.5, 0.5);
 
     // basic keyboard control
     this.cursors = {
       ...this.input.keyboard.createCursorKeys(),
-      ...this.input.keyboard.addKeys("Z,S,Q,D")
+      ...this.input.keyboard.addKeys('Z,S,Q,D')
     };
 
     // space for action
-    this.input.keyboard.on("keydown_SPACE", () => this.throwFireball());
+    this.input.keyboard.on('keydown_SPACE', () => this.throwFireball());
 
     this.actionBar = this.physics.add.sprite(
       30,
       this.CONFIG.height - 20,
-      "worldAnim",
-      "fireball-4"
+      'worldAnim',
+      'fireball-4'
     );
     this.actionBar.setScale(0.8, 0.8);
     this.actionBar.setDepth(10); // UI depth
     this.actionBar.setScrollFactor(0);
     this.actionBar.setVisible(false);
     this.actionBar.setInteractive();
-    this.actionBar.on("pointerup", () => this.throwFireball());
+    this.actionBar.on('pointerup', () => this.throwFireball());
 
     // just an experiment / replace with emitter ?
     this.fireballs = this.physics.add.group();
     this.physics.add.collider(
       this.fireballs,
-      this.layers["detailObstacles"],
+      this.layers['details'],
+      fireball => this.explodeOnContact(fireball)
+    );
+    this.physics.add.collider(this.fireballs, this.layers['world'], fireball =>
+      this.explodeOnContact(fireball)
+    );
+
+    this.enemyFireballs = this.physics.add.group();
+    this.physics.add.collider(
+      this.enemyFireballs,
+      this.layers['details'],
       fireball => this.explodeOnContact(fireball)
     );
     this.physics.add.collider(
-      this.fireballs,
-      this.layers["worldLayer"],
+      this.enemyFireballs,
+      this.layers['world'],
       fireball => this.explodeOnContact(fireball)
     );
 
     // destroy fireballs reaching the boundaries
-    this.physics.world.on("worldbounds", function(body) {
+    this.physics.world.on('worldbounds', function(body) {
       var ball = body.gameObject;
-      if (ball.frame.name.indexOf("fireball") >= 0) {
+      if (ball.frame.name.indexOf('fireball') >= 0) {
         ball.destroy();
       }
     });
 
     // pretty basic, need to make it reusable
     this.handleCollisions();
+    this.handleMonsters();
+    this.handleBoss();
     this.showQuest();
 
     // mouse / touch controls
-    const playerSprite = this.creatures["player"].spr;
+    const playerSprite = this.creatures['player'].spr;
     this.pointerDownMove = false;
-    this.layers["aboveLayer"].setInteractive();
-    this.layers["aboveLayer"].on("pointerdown", pointer => {
+    this.layers['background'].setInteractive();
+    this.layers['background'].on('pointerdown', pointer => {
       this.pointerDownMove = pointer;
     });
-    this.layers["aboveLayer"].on("pointermove", pointer => {
+    this.layers['background'].on('pointermove', pointer => {
       if (this.pointerDownMove) {
         this.pointerDownMove = pointer;
       }
     });
-    this.layers["aboveLayer"].on("pointerup", () => {
+    this.layers['background'].on('pointerup', () => {
       this.pointerDownMove = false;
       playerSprite.anims.stop();
-      this.creatures["player"].spr.setVelocity(0);
+      this.creatures['player'].spr.setVelocity(0);
     });
 
     // debug
-    //this.showDebugInfos();
+    // this.showDebugInfos();
 
     // Listen for this scene exit
-    this.events.once("shutdown", this.shutdown, this);
+    this.events.once('shutdown', this.shutdown, this);
   }
 
   /**
@@ -194,16 +155,15 @@ class Game extends BaseScene {
    * @param time
    * @param delta
    */
-  update(time, delta) {
-    const player = this.creatures["player"];
-    player.entity.update(this.pointerDownMove);
-    this.cameraDolly.x = Math.floor(player.spr.x);
-    this.cameraDolly.y = Math.floor(player.spr.y);
+  update() {
+    this.creatures['player'].entity.update(this.pointerDownMove);
+    this.creatures['boss'].entity.update();
+    this.creatures['monster1'].entity.update();
   }
 
   shutdown() {
     // When this scene exits, remove the resize handler
-    this.sys.game.events.off("resize", this.resize, this);
+    this.sys.game.events.off('resize', this.resize, this);
   }
 
   /**
@@ -213,20 +173,20 @@ class Game extends BaseScene {
    * @return {type}          description
    */
   waitInputToContinue(callback) {
-    if (typeof callback !== "function") {
-      this.input.off("pointerup");
-      this.input.keyboard.off("keyup");
+    if (typeof callback !== 'function') {
+      this.input.off('pointerup');
+      this.input.keyboard.off('keyup');
       return;
     }
-    this.input.on("pointerup", callback, this);
+    this.input.on('pointerup', callback, this);
     function handleKeyUp(e) {
       switch (e.code) {
-        case "Enter":
+        case 'Enter':
           callback();
           break;
       }
     }
-    this.input.keyboard.on("keyup", handleKeyUp, this);
+    this.input.keyboard.on('keyup', handleKeyUp, this);
   }
 
   /**
@@ -239,24 +199,24 @@ class Game extends BaseScene {
    * @return {type}       description
    */
   createModal(text, x, y, width) {
-    const lineCount = text.split("\n").length;
+    const lineCount = text.split('\n').length;
     const textSize = 20 * lineCount;
     const padding = 6;
     const w =
-      typeof width === "number"
+      typeof width === 'number'
         ? width
         : (0.95 * this.CONFIG.width) / this.cameras.main.zoom;
     let h = textSize + padding * 2;
 
-    x = typeof x === "number" ? x : (this.CONFIG.width - w) / 2;
+    x = typeof x === 'number' ? x : (this.CONFIG.width - w) / 2;
     if (x < 0) {
       x = this.CONFIG.width - w + x;
     }
-    y = typeof y === "number" ? y : this.CONFIG.centerY + 5;
+    y = typeof y === 'number' ? y : this.CONFIG.centerY + 5;
 
     // quest text
-    const questStyle = this.stylesData["questTest"];
-    questStyle["wordWrap"] = { width: w - padding, useAdvancedWrap: true };
+    const questStyle = this.stylesData['questTest'];
+    questStyle['wordWrap'] = { width: w - padding, useAdvancedWrap: true };
     const questText = this.add
       .text(x + padding, y + padding, text, questStyle)
       .setLineSpacing(3)
@@ -270,7 +230,7 @@ class Game extends BaseScene {
     // modal background
     const boxBg = this.add.graphics({ x: x, y: y });
     boxBg.clear().setScrollFactor(0);
-    boxBg.fillStyle("0xFFFFFF", 1);
+    boxBg.fillStyle('0xFFFFFF', 1);
     boxBg
       .fillRect(0, 0, w, h)
       .setAlpha(0)
@@ -279,13 +239,13 @@ class Game extends BaseScene {
     // modal border
     const boxBorder = this.add.graphics({ x: x, y: y });
     boxBorder.clear().setScrollFactor(0);
-    boxBorder.lineStyle(3, "0x4D6592", 1);
+    boxBorder.lineStyle(3, '0x4D6592', 1);
     boxBorder
       .strokeRect(0, 0, w, h)
       .setAlpha(0)
       .setDepth(9);
 
-    return [questText, boxBg, boxBorder];
+    return [ questText, boxBg, boxBorder ];
   }
 
   /**
@@ -294,13 +254,13 @@ class Game extends BaseScene {
    * @return {type}  description
    */
   showQuest() {
-    const modalElements = this.createModal(this.textsData["QUEST_1"]);
+    const modalElements = this.createModal(this.textsData['QUEST_1']);
     const tween = this.tweens.add({
       targets: modalElements,
       alpha: 1,
       duration: 1000,
-      ease: "Cubic",
-      easeParams: [1, 1]
+      ease: 'Cubic',
+      easeParams: [ 1, 1 ]
     });
     this.waitInputToContinue(() => {
       this.waitInputToContinue(false);
@@ -310,8 +270,8 @@ class Game extends BaseScene {
         targets: modalElements,
         alpha: 0,
         duration: 900,
-        ease: "Cubic",
-        easeParams: [1, 1],
+        ease: 'Cubic',
+        easeParams: [ 1, 1 ],
         onComplete: () => {
           tween.stop();
           this.showQuestStatus();
@@ -319,7 +279,6 @@ class Game extends BaseScene {
       });
     });
   }
-
 
   /**
    * init items and goal infos
@@ -330,15 +289,15 @@ class Game extends BaseScene {
     this.questEnded = false;
 
     // coins : this is for the quest, will move to quest manager
-    this.coins = this.map.createFromObjects("objects", 1576, {
-      key: "worldAnim",
-      frame: "coin-1"
+    this.coins = this.map.createFromObjects('objects', 1576, {
+      key: 'worldAnim',
+      frame: 'coin-1'
     });
     this.coins.forEach(c => this.physics.add.existing(c)); // add physics
-    this.anims.play("spr-coin", this.coins);
+    this.anims.play('spr-coin', this.coins);
 
     this.physics.add.overlap(
-      this.creatures["player"].spr,
+      this.creatures['player'].spr,
       this.coins,
       this.collectCoin,
       null,
@@ -353,9 +312,9 @@ class Game extends BaseScene {
    */
   showQuestStatus() {
     this.statusModal = this.createModal(
-      this.textsData["QUEST_STATUS"] +
+      this.textsData['QUEST_STATUS'] +
         this.questRemainingCoins +
-        "  / " +
+        '  / ' +
         this.questRequiredCoins,
       -5,
       5,
@@ -365,8 +324,8 @@ class Game extends BaseScene {
       targets: this.statusModal,
       alpha: 1,
       duration: 1000,
-      ease: "Cubic",
-      easeParams: [1, 1],
+      ease: 'Cubic',
+      easeParams: [ 1, 1 ],
       delay: 0
     });
   }
@@ -378,9 +337,9 @@ class Game extends BaseScene {
    */
   updateQuestStatus() {
     this.statusModal[0].setText(
-      this.textsData["QUEST_STATUS"] +
+      this.textsData['QUEST_STATUS'] +
         this.questRemainingCoins +
-        "  / " +
+        '  / ' +
         this.questRequiredCoins
     );
   }
@@ -394,20 +353,20 @@ class Game extends BaseScene {
    */
   collectCoin(player, coin) {
     coin.destroy();
-    this.sound.play("coin");
+    this.sound.play('coin');
     this.questRemainingCoins--;
     this.updateQuestStatus();
-    this.creatures["player"].entity.addScore(1);
+    this.creatures['player'].entity.addScore(1);
 
     // coins obtained ! Quest is over
     if (this.questRemainingCoins === 0) {
       this.coins.forEach(coin => coin.destroy());
-      this.statusModal[0].setText(this.textsData["QUEST_SUCCESS1"]);
+      this.statusModal[0].setText(this.textsData['QUEST_SUCCESS1']);
 
       this.time.addEvent({
         delay: 2000,
         callback: () => {
-          this.statusModal[0].setText(this.textsData["QUEST_SUCCESS2"]);
+          this.statusModal[0].setText(this.textsData['QUEST_SUCCESS2']);
         },
         callbackScope: this
       });
@@ -430,18 +389,18 @@ class Game extends BaseScene {
       targets: this.statusModal,
       alpha: 0,
       duration: 1000,
-      ease: "Cubic",
-      easeParams: [1, 1],
+      ease: 'Cubic',
+      easeParams: [ 1, 1 ],
       delay: 0
     });
 
-    const modalElements = this.createModal(this.textsData["QUEST_ENDED"]);
+    const modalElements = this.createModal(this.textsData['QUEST_ENDED']);
     const tween = this.tweens.add({
       targets: modalElements,
       alpha: 1,
       duration: 1000,
-      ease: "Cubic",
-      easeParams: [1, 1]
+      ease: 'Cubic',
+      easeParams: [ 1, 1 ]
     });
 
     this.waitInputToContinue(() => {
@@ -452,32 +411,34 @@ class Game extends BaseScene {
     });
   }
 
-
-/**
- * Display help to use staff spell and throw a fireball
- *
- * @param  {type} modalElements access to existing modal
- * @return void
- */
-showStaffTuto(modalElements) {
+  /**
+   * Display help to use staff spell and throw a fireball
+   *
+   * @param  {type} modalElements access to existing modal
+   * @return void
+   */
+  showStaffTuto(modalElements) {
     const w = (0.95 * this.CONFIG.width) / this.cameras.main.zoom;
-    modalElements[0].setText(this.textsData["TUTO_STAFF_MOBILE"]);
+    const tuto = this.game.device.os.desktop
+      ? 'TUTO_STAFF_DESKTOP'
+      : 'TUTO_STAFF_MOBILE';
+    modalElements[0].setText(this.textsData[tuto]);
     modalElements[1].clear().fillRect(0, 0, w, 72);
-    modalElements[2].clear().lineStyle(3, "0x4D6592", 1).strokeRect(0, 0, w, 72);
+    modalElements[2]
+      .clear()
+      .lineStyle(3, '0x4D6592', 1)
+      .strokeRect(0, 0, w, 72);
     this.waitInputToContinue(() => {
       this.waitInputToContinue(false);
       this.tweens.add({
         targets: modalElements,
         alpha: 0,
         duration: 900,
-        ease: "Cubic",
-        easeParams: [1, 1]
+        ease: 'Cubic',
+        easeParams: [ 1, 1 ]
       });
     });
-}
-
-
-
+  }
 
   /**
    * Debug helper, needs to work on that
@@ -488,12 +449,19 @@ showStaffTuto(modalElements) {
       .graphics()
       .setAlpha(0.75)
       .setDepth(20);
-    this.layers["worldLayer"].renderDebug(graphics, {
+
+    this.layers['background'].renderDebug(graphics, {
       tileColor: null, // Color of non-colliding tiles
       collidingTileColor: new Phaser.Display.Color(243, 134, 48, 255), // Color of colliding tiles
       faceColor: new Phaser.Display.Color(40, 39, 37, 255) // Color of colliding face edges
     });
-    this.layers["detailObstacles"].renderDebug(graphics, {
+
+    this.layers['world'].renderDebug(graphics, {
+      tileColor: null, // Color of non-colliding tiles
+      collidingTileColor: new Phaser.Display.Color(243, 134, 48, 255), // Color of colliding tiles
+      faceColor: new Phaser.Display.Color(40, 39, 37, 255) // Color of colliding face edges
+    });
+    this.layers['details'].renderDebug(graphics, {
       tileColor: null, // Color of non-colliding tiles
       collidingTileColor: new Phaser.Display.Color(243, 134, 48, 255), // Color of colliding tiles
       faceColor: new Phaser.Display.Color(40, 39, 37, 255) // Color of colliding face edges
@@ -501,72 +469,161 @@ showStaffTuto(modalElements) {
   }
 
   /**
-   * Manage collision : creature taking dammage, etc.
+   * Create boss movements and reaction to player
+   *
+   * Start with same behaviour as monsters
    */
-  handleCollisions() {
-    this.layers["worldLayer"].setCollisionByExclusion([-1]);
+  handleBoss() {
+    // monster touch damage player
     this.physics.add.collider(
-      this.creatures["player"].spr,
-      this.layers["worldLayer"]
-    );
-    this.layers["detailObstacles"].setCollisionByExclusion([-1]);
-    this.physics.add.collider(
-      this.creatures["player"].spr,
-      this.layers["detailObstacles"]
-    );
-    this.physics.add.collider(
-      this.creatures["player"].spr,
-      this.creatures["grandma"].spr
-    );
-    this.physics.add.collider(
-      this.creatures["player"].spr,
-      this.creatures["aryl"].spr
-    );
-
-    this.physics.add.collider(
-      this.creatures["player"].spr,
-      this.creatures["monster1"].spr,
+      this.creatures['player'].spr,
+      this.creatures['boss'].spr,
       this.dammagePlayer,
       null,
       this
     );
 
+    // monster get damaged by fireballs
     this.physics.add.overlap(
-      this.creatures["monster1"].spr,
-      this.fireballs,
-      (monster, fireball) => {
+      this.creatures['player'].spr,
+      this.enemyFireballs,
+      (player, fireball) => {
         fireball.destroy();
-        this.sound.play("damage");
-        this.creatures["monster1"].entity.takeDamage(monster, this.enemyDeath);
+        this.sound.play('damage');
+        this.dammagePlayer(player, null);
       },
       null,
       this
     );
 
-    this.physics.add.collider(
-      this.creatures["player"].spr,
-      this.creatures["oldman"].spr,
-      this.returnQuest,
-      null,
-      this
-    );
-
-    this.physics.add.collider(
-      this.creatures["player"].spr,
-      this.creatures["boss"].spr,
-      this.dammagePlayer,
-      null,
-      this
-    );
-
+    // monster get damaged by fireballs
     this.physics.add.overlap(
-      this.creatures["boss"].spr,
+      this.creatures['boss'].spr,
       this.fireballs,
       (boss, fireball) => {
         fireball.destroy();
-        this.sound.play("damage");
-        this.creatures["boss"].entity.takeDamage(boss, this.enemyDeath);
+        this.sound.play('damage');
+        this.creatures['boss'].entity.takeDamage(boss, this.enemyDeath);
       },
+      null,
+      this
+    );
+
+    this.creatures['boss'].spr.setVelocityX(-20);
+
+    this.physics.add.collider(this.creatures['boss'].spr, [
+      this.layers['background'],
+      this.layers['world'],
+      this.layers['details'],
+      this.enemyWalls
+    ]);
+
+    // boss detect player and attack him
+
+    const detectPlayer = this.map.filterObjects(
+      'objects',
+      obj => obj.type === 'bossDetectPlayer'
+    );
+
+    this.detectPlayer = this.physics.add.group();
+    detectPlayer.forEach(l => {
+      const detection = this.add.rectangle(l.x, l.y, l.width, l.height);
+
+      // detection.setStrokeStyle(1, 0xefc53f);
+      detection.setOrigin(0, 0).setAlpha(0.5);
+      detection.name = l.name;
+      this.detectPlayer.add(detection);
+    });
+
+    const playerSprite = this.creatures['player'].spr;
+    this.physics.add.overlap(
+      playerSprite,
+      this.detectPlayer,
+      (player, detectZone) => {
+        if (detectZone.name === 'bossDetectPlayer') {
+          this.creatures['boss'].entity.startAttack(
+            playerSprite,
+            this.enemyFireballs
+          );
+        } else if (detectZone.name === 'bossDetectPlayerOut') {
+          this.creatures['boss'].entity.stopAttack();
+        }
+      }
+    );
+  }
+
+  /**
+   * Initialize monsters movements
+   *
+   * For now, they just bounce around
+   **/
+  handleMonsters() {
+    // monster touch damage player
+    this.physics.add.collider(
+      this.creatures['player'].spr,
+      this.creatures['monster1'].spr,
+      this.dammagePlayer,
+      null,
+      this
+    );
+
+    // monster get damaged by fireballs
+    this.physics.add.overlap(
+      this.creatures['monster1'].spr,
+      this.fireballs,
+      (monster, fireball) => {
+        fireball.destroy();
+        this.sound.play('damage');
+        this.creatures['monster1'].entity.takeDamage(monster, this.enemyDeath);
+      },
+      null,
+      this
+    );
+
+    // building walls to keep monsters inside
+    const limits = this.map.filterObjects(
+      'objects',
+      obj => obj.name === 'monsterLimits'
+    );
+    this.enemyWalls = this.physics.add.group();
+    limits.forEach(l => {
+      const wall = this.add.rectangle(l.x, l.y, l.width, l.height);
+
+      // wall.setStrokeStyle(4, 0xefc53f);
+      wall.setOrigin(0, 0).setAlpha(0.5);
+      this.enemyWalls.add(wall);
+      this.physics.add.existing(wall);
+      wall.body.immovable = true;
+      wall.body.setImmovable(true);
+    });
+    this.creatures['monster1'].spr.map(m =>
+      m.setVelocityX(40).setVelocityY(40)
+    );
+
+    this.physics.add.collider(this.creatures['monster1'].spr, [
+      this.layers['background'],
+      this.layers['world'],
+      this.layers['details'],
+      this.enemyWalls
+    ]);
+  }
+
+  /**
+   * Manage collision : creature taking dammage, etc.
+   */
+  handleCollisions() {
+    this.physics.add.collider(this.creatures['player'].spr, [
+      this.layers['background'],
+      this.layers['world'],
+      this.layers['details'],
+      this.creatures['grandma'].spr,
+      this.creatures['aryl'].spr
+    ]);
+
+    this.physics.add.collider(
+      this.creatures['player'].spr,
+      this.creatures['oldman'].spr,
+      this.returnQuest,
       null,
       this
     );
@@ -588,7 +645,7 @@ showStaffTuto(modalElements) {
    * @return {type}  description
    */
   enemyDeath() {
-    this.creatures["player"].entity.addScore(10);
+    this.creatures['player'].entity.addScore(10);
   }
 
   /**
@@ -603,8 +660,8 @@ showStaffTuto(modalElements) {
     }
 
     // create fireball and animate it
-    var fireball = this.fireballs
-      .create(0, 0, "worldAnim", "fireball-1")
+    const fireball = this.fireballs
+      .create(0, 0, 'worldAnim', 'fireball-1')
       .setScale(0.25, 0.25)
       .setVelocity(0);
     fireball.setCollideWorldBounds(true);
@@ -612,21 +669,21 @@ showStaffTuto(modalElements) {
     fireball.enableBody();
     fireball.body.setCollideWorldBounds(true);
     fireball.body.onWorldBounds = true;
-    fireball.anims.play("spr-fireball", true);
-    this.sound.play("fireball");
+    fireball.anims.play('spr-fireball', true);
+    this.sound.play('fireball');
 
-    const x = this.creatures["player"].spr.x;
-    const y = this.creatures["player"].spr.y;
+    const x = this.creatures['player'].spr.x;
+    const y = this.creatures['player'].spr.y;
 
     // just use player frame to know where he is facing
-    const frameName = this.creatures["player"].spr.frame.name;
-    if (frameName.indexOf("walkup") >= 0) {
+    const frameName = this.creatures['player'].spr.frame.name;
+    if (frameName.indexOf('walkup') >= 0) {
       fireball.setPosition(x + 10, y - 5).setVelocityY(-200);
-    } else if (frameName.indexOf("walkdown") >= 0) {
+    } else if (frameName.indexOf('walkdown') >= 0) {
       fireball.setPosition(x + 10, y + 25).setVelocityY(200);
-    } else if (frameName.indexOf("walkleft") >= 0) {
+    } else if (frameName.indexOf('walkleft') >= 0) {
       fireball.setPosition(x - 5, y + 10).setVelocityX(-200);
-    } else if (frameName.indexOf("walkright") >= 0) {
+    } else if (frameName.indexOf('walkright') >= 0) {
       fireball.setPosition(x + 20, y + 10).setVelocityX(200);
     }
   }
@@ -646,39 +703,72 @@ showStaffTuto(modalElements) {
     const { type, spawn, frame, animation } = config;
 
     switch (type) {
-      case "player":
+      case 'player':
         entity = new Player(
           this,
           this.map,
           spawn,
-          "worldAnim",
+          'worldAnim',
           frame,
           animation
         );
         break;
-      case "boss":
-        entity = new Boss(this, this.map, spawn, "worldAnim", frame, animation);
+      case 'boss':
+        entity = new Boss(this, this.map, spawn, 'worldAnim', frame, animation);
         break;
-      case "monster":
+      case 'monster':
         entity = new Monster(
           this,
           this.map,
           spawn,
-          "worldAnim",
+          'worldAnim',
           frame,
           animation
         );
         break;
       default:
-        entity = new Pnj(this, this.map, spawn, "worldAnim", frame, animation);
+        entity = new Pnj(this, this.map, spawn, 'worldAnim', frame, animation);
     }
     return entity;
   }
 
   /**
-   * Create sprites for everything with "AI" or user control
-   *
-   * For now we use a hash table to reference them... not optimal
+   * Load tilemap, monsters, pnj, player from spawn points
+   */
+  loadLevelElements() {
+    this.layers = {};
+    this.map = this.add.tilemap('level1');
+    const backgroundTile = this.map.addTilesetImage(
+      'overworld',
+      'gameTile',
+      16,
+      16,
+      1,
+      2
+    );
+    this.layers['background'] = this.map.createDynamicLayer(
+      'background',
+      backgroundTile,
+      0,
+      0
+    );
+    this.layers['world'] = this.map.createDynamicLayer(
+      'world',
+      backgroundTile,
+      0,
+      0
+    );
+    this.layers['details'] = this.map
+      .createDynamicLayer('details', backgroundTile, 0, 0)
+      .setDepth(2);
+    this.sys.animatedTiles.init(this.map);
+    this.layers['background'].setCollisionByProperty({ collide: true });
+    this.layers['world'].setCollisionByProperty({ collide: true });
+    this.layers['details'].setCollisionByProperty({ collide: true });
+  }
+
+  /**
+   * Create sprites for pnj, monsters, boss and player
    */
   createWorldInhabitants() {
     this.creatures = {};
@@ -690,18 +780,16 @@ showStaffTuto(modalElements) {
 
   /**
    * Create sprite for moving decoration like waterfall
-   *
-   * @note : This will be updated to an animated tile map
    */
   createWorldAnimations() {
     // little bubble to attract attention, may add an "Expression" entity later
     this.talkingEntity = new Entity(
       this,
       this.map,
-      "talkingSpawn",
-      "worldAnim",
-      "talking-1",
-      "spr-talking"
+      'talkingSpawn',
+      'worldAnim',
+      'talking-1',
+      'spr-talking'
     );
     this.talking = this.talkingEntity.create()[0];
     this.talking.setDepth(2);
@@ -721,7 +809,7 @@ showStaffTuto(modalElements) {
    * @return {type}        description
    */
   collectHeart(player, heart) {
-    this.creatures["player"].entity.getHealing();
+    this.creatures['player'].entity.getHealing();
     heart.disableBody(true, true);
   }
 
@@ -732,28 +820,35 @@ showStaffTuto(modalElements) {
    * @param enemy
    */
   dammagePlayer(player, enemy) {
-    this.sound.play("damage");
-    this.creatures["player"].entity.takeDamage(player);
+    this.sound.play('damage');
+    this.creatures['player'].entity.takeDamage(player);
+
+    // this.cameras.main.shake(200);
+    this.cameras.main.flash(200);
+
+    // this.cameras.main.fade(200);
 
     // Knocks back enemy after colliding
-    if (enemy.body.touching.left) {
-      enemy.body.velocity.x = 150;
-    } else if (enemy.body.touching.right) {
-      enemy.body.velocity.x = -150;
-    } else if (enemy.body.touching.up) {
-      enemy.body.velocity.y = 150;
-    } else if (enemy.body.touching.down) {
-      enemy.body.velocity.y = -150;
-    }
+    if (enemy && enemy.body) {
+      if (enemy.body.touching.left) {
+        enemy.body.velocity.x = 150;
+      } else if (enemy.body.touching.right) {
+        enemy.body.velocity.x = -150;
+      } else if (enemy.body.touching.up) {
+        enemy.body.velocity.y = 150;
+      } else if (enemy.body.touching.down) {
+        enemy.body.velocity.y = -150;
+      }
 
-    this.time.addEvent({
-      delay: 150,
-      callback: () => {
-        enemy.body.setVelocity(0);
-      },
-      callbackScope: this,
-      repeat: 0
-    });
+      this.time.addEvent({
+        delay: 150,
+        callback: () => {
+          enemy.body.setVelocity(0);
+        },
+        callbackScope: this,
+        repeat: 0
+      });
+    }
   }
 }
 

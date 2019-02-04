@@ -27,17 +27,13 @@ export default class Entity {
    */
   create() {
     if (typeof this.spawnName === 'object') {
-      this.spawnName = [this.spawnName];
+      this.spawnName = [ this.spawnName ];
     }
-    const spawnPoint = this.map.findObject(
-      'objects',
-      obj => obj.type === this.spawnName
-    );
     const spawnSearch = this.findObjectsByType(this.spawnName, this.map);
 
     // trying feature to simplify this...
-    //console.log('this.spawnName = ', this.spawnName, ' => ', spawnSearch);
-    //console.log('spawnPoint => ', spawnPoint);
+    // console.log('this.spawnName = ', this.spawnName, ' => ', spawnSearch);
+    // console.log('spawnPoint => ', spawnPoint);
 
     const entities = [];
     spawnSearch.forEach(entity => {
@@ -108,7 +104,7 @@ export default class Entity {
         entity.setVelocity(0);
       },
       callbackScope: this,
-      repeat: 0,
+      repeat: 0
     });
   }
 
@@ -122,7 +118,7 @@ export default class Entity {
    */
   takeDamage(entity, onDeath) {
     // Makes it immune for a short time
-    if (entity.immune) return;
+    if (entity.immune) { return; }
     entity.immune = true;
 
     // play hurt animations
@@ -145,7 +141,7 @@ export default class Entity {
         entity.immune = false;
       },
       callbackScope: this,
-      repeat: 0,
+      repeat: 0
     });
   }
 
