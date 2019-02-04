@@ -500,7 +500,7 @@ class Game extends BaseScene {
     this.detectPlayer = this.physics.add.group();
     detectPlayer.forEach(l => {
       const detection = this.add.rectangle(l.x, l.y, l.width, l.height);
-      detection.setStrokeStyle(4, 0xefc53f);
+      //detection.setStrokeStyle(4, 0xefc53f);
       detection.setOrigin(0, 0).setAlpha(0.5);
       detection.name = l.name;
       this.detectPlayer.add(detection);
@@ -518,7 +518,7 @@ class Game extends BaseScene {
         } else if (zoneEntered && detectZone.name === 'bossDetectPlayerOut') {
           zoneEntered = false;
           this.creatures['boss'].entity.stopAttack();
-          this.creatures['boss'].spr.setVelocityX(-20);
+          //this.creatures['boss'].spr.setVelocityX(-20);
         }
 
       }
