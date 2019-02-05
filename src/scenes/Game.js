@@ -403,12 +403,22 @@ class Game extends BaseScene {
       easeParams: [ 1, 1 ]
     });
 
-    this.waitInputToContinue(() => {
-      tween.stop();
-      this.playerHasMagicStaff = true;
-      this.actionBar.setVisible(true);
-      this.showStaffTuto(modalElements);
+
+    this.time.addEvent({
+      delay: 1000,
+      callback: () => {
+        this.waitInputToContinue(() => {
+          tween.stop();
+          this.playerHasMagicStaff = true;
+          this.actionBar.setVisible(true);
+          this.showStaffTuto(modalElements);
+        });
+      },
+      callbackScope: this,
+      repeat: 3
     });
+
+
   }
 
   /**
@@ -634,11 +644,32 @@ class Game extends BaseScene {
       'objects',
       obj => obj.name === 'endDemo'
     );
+
+    const detectEndZone = this.physics.add.group();
+    endZone.forEach(l => {
+      const detection = this.add.rectangle(l.x, l.y, l.width, l.height);
+      detection.setOrigin(0, 0).setAlpha(0.5);
+      detection.name = l.name;
+      detectEndZone.add(detection);
+    });
+
     this.physics.add.overlap(
       playerSprite,
-      endZone,
-      (player, detectZone) => {
-        this.scene.start('DemoEnding');
+      detectEndZone,
+      () => {
+        
+        this.tweens.add({
+          targets: playerSprite,
+          alpha: 0,
+          duration: 1500,
+          ease: 'Cubic',
+          easeParams: [ 1, 1 ],
+          delay: 500,
+          onComplete: () => {
+            this.scene.start('DemoEnding');
+          }
+        });
+
       }
     );
   }
