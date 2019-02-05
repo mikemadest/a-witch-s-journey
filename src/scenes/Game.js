@@ -403,11 +403,18 @@ class Game extends BaseScene {
       easeParams: [ 1, 1 ]
     });
 
-    this.waitInputToContinue(() => {
-      tween.stop();
-      this.playerHasMagicStaff = true;
-      this.actionBar.setVisible(true);
-      this.showStaffTuto(modalElements);
+    this.time.addEvent({
+      delay: 1000,
+      callback: () => {
+        this.waitInputToContinue(() => {
+          tween.stop();
+          this.playerHasMagicStaff = true;
+          this.actionBar.setVisible(true);
+          this.showStaffTuto(modalElements);
+        });
+      },
+      callbackScope: this,
+      repeat: 3
     });
   }
 
@@ -488,7 +495,7 @@ class Game extends BaseScene {
       this.creatures['player'].spr,
       this.enemyFireballs,
       (player, fireball) => {
-        fireball.destroy();
+        this.explodeOnContact(fireball);
         this.sound.play('damage');
         this.dammagePlayer(player, null);
       },
@@ -501,7 +508,7 @@ class Game extends BaseScene {
       this.creatures['boss'].spr,
       this.fireballs,
       (boss, fireball) => {
-        fireball.destroy();
+        this.explodeOnContact(fireball);
         this.sound.play('damage');
         this.creatures['boss'].entity.takeDamage(boss, this.enemyDeath);
       },
@@ -572,7 +579,7 @@ class Game extends BaseScene {
       this.creatures['monster1'].spr,
       this.fireballs,
       (monster, fireball) => {
-        fireball.destroy();
+        this.explodeOnContact(fireball);
         this.sound.play('damage');
         this.creatures['monster1'].entity.takeDamage(monster, this.enemyDeath);
       },
@@ -612,7 +619,9 @@ class Game extends BaseScene {
    * Manage collision : creature taking dammage, etc.
    */
   handleCollisions() {
-    this.physics.add.collider(this.creatures['player'].spr, [
+    const playerSprite = this.creatures['player'].spr;
+
+    this.physics.add.collider(playerSprite, [
       this.layers['background'],
       this.layers['world'],
       this.layers['details'],
@@ -621,12 +630,39 @@ class Game extends BaseScene {
     ]);
 
     this.physics.add.collider(
-      this.creatures['player'].spr,
+      playerSprite,
       this.creatures['oldman'].spr,
       this.returnQuest,
       null,
       this
     );
+
+    const endZone = this.map.filterObjects(
+      'objects',
+      obj => obj.name === 'endDemo'
+    );
+
+    const detectEndZone = this.physics.add.group();
+    endZone.forEach(l => {
+      const detection = this.add.rectangle(l.x, l.y, l.width, l.height);
+      detection.setOrigin(0, 0).setAlpha(0.5);
+      detection.name = l.name;
+      detectEndZone.add(detection);
+    });
+
+    this.physics.add.overlap(playerSprite, detectEndZone, () => {
+      this.tweens.add({
+        targets: playerSprite,
+        alpha: 0,
+        duration: 1500,
+        ease: 'Cubic',
+        easeParams: [ 1, 1 ],
+        delay: 500,
+        onComplete: () => {
+          this.scene.start('DemoEnding');
+        }
+      });
+    });
   }
 
   /**
@@ -636,6 +672,23 @@ class Game extends BaseScene {
    * @return {type}          description
    */
   explodeOnContact(fireball) {
+    var particles = this.add.particles('worldAnim');
+    var emitter1 = particles.createEmitter({
+      frame: {
+        frames: [ 'fireball-1', 'fireball-2', 'fireball-3', 'fireball-4' ],
+        cycle: true
+      },
+      x: fireball.x,
+      y: fireball.y,
+      angle: { min: 0, max: 360 },
+      scale: { start: 1, end: 0 },
+      blendMode: 'SCREEN',
+      frequency: 20,
+      quantity: 2,
+      lifespan: 800
+    });
+    emitter1.setPosition(fireball.x, fireball.y);
+    emitter1.explode();
     fireball.destroy();
   }
 

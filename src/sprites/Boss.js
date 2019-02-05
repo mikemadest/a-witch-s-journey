@@ -48,7 +48,7 @@ export default class Boss extends Monster {
    * @todo : invoke adds, more fun attacks ?
    */
   throwFireball() {
-    if (this.pauseAttack || this.nextState !== 'attack') {
+    if (this.life === 0 || this.pauseAttack || this.nextState !== 'attack') {
       return;
     }
     this.pauseAttack = true;
@@ -83,6 +83,9 @@ export default class Boss extends Monster {
     this.ctx.time.addEvent({
       delay: newTime,
       callback: () => {
+        if (this.life === 0 || !this.spr || !this.spr.body) {
+          return;
+        }
         this.pauseAttack = false;
         this.throwFireball();
       },
@@ -102,6 +105,9 @@ export default class Boss extends Monster {
    * @param String newState
    */
   requireState(newState) {
+    if (this.life === 0 || !this.spr || !this.spr.body) {
+      return;
+    }
     this.state = this.nextState;
     this.nextState = newState;
     this.inTransition = false;
@@ -130,6 +136,10 @@ export default class Boss extends Monster {
       this.ctx.time.addEvent({
         delay: 1000,
         callback: () => {
+          if (this.life === 0 || !this.spr || !this.spr.body) {
+            console.log('boss dead');
+            return;
+          }
           this.spr.setVelocityX(0);
           this.spr.setVelocityY(0);
           this.spr.anims.play('spr-pirate-stand', true);
@@ -188,7 +198,7 @@ export default class Boss extends Monster {
    * Refresh entity for each frame
    */
   update() {
-    if (!this.spr || !this.spr.body) {
+    if (this.life === 0 || !this.spr || !this.spr.body) {
       return;
     }
     this.transitionToState(this.state, this.nextState);

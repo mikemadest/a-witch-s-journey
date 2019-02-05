@@ -14,6 +14,10 @@ Destroy the monsters attaking the village, get him back !
 - bridge boss patrol
 - bridge boss attack if player is close by
 - corrected a few eslint errors
+- enemy down animation
+- killing the bridge boss allow access to the next zone (demo ending).
+- fireball explode on contact
+- demo end screen
 
 
 ### Version 0.07
@@ -83,8 +87,10 @@ New entities and animations :
 ----------------------
 
 ## BACKLOG
-- enemy down animation
-- killing the bridge boss allow access to the next zone (demo ending).
-- fireball explode on contact
 - code refactoring : quest module, modal management, events managements
+- more quests
+- bigger attacks / power up
+- heart, chest
+- pnj dialogue
+- hurt sound and animations
 - monster dynamic spawn (boss effect, story)

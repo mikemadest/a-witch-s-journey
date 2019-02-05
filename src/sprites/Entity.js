@@ -118,7 +118,9 @@ export default class Entity {
    */
   takeDamage(entity, onDeath) {
     // Makes it immune for a short time
-    if (entity.immune) { return; }
+    if (entity.immune) {
+      return;
+    }
     entity.immune = true;
 
     // play hurt animations
@@ -135,7 +137,7 @@ export default class Entity {
     this.bumped(entity);
 
     this.ctx.time.addEvent({
-      delay: 500,
+      delay: 800,
       callback: () => {
         entity.clearTint();
         entity.immune = false;
@@ -157,7 +159,20 @@ export default class Entity {
       if (typeof onDeath === 'function') {
         onDeath.call(this.ctx);
       }
-      entity.destroy();
+      entity.anims.stop();
+      entity.setVelocityX(0).setVelocityY(0);
+
+      this.ctx.tweens.add({
+        targets: entity,
+        alpha: 0,
+        duration: 800,
+        ease: 'Linear',
+        delay: 0,
+        onComplete: () => {
+          entity.destroy();
+        }
+      });
+
       return true;
     }
     return false;
@@ -183,4 +198,6 @@ export default class Entity {
     });
     return result;
   }
+
+  refreshLife() {}
 }
