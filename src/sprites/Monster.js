@@ -23,13 +23,14 @@ export default class Monster extends Entity {
   }
 
   update() {
-    if (!this.spr || !this.spr.body) {
-      return;
-    }
+
     // no movement, stop animation / idle animation
     this.spr.forEach(m => {
+      if (!m.body || m.life === 0) {
+        return;
+      }
       if (m.body.velocity.x === 0 && m.body.velocity.y === 0) {
-        m.anims.stop();
+        m.setVelocityX(40).setVelocityY(40);
       } else if (m.body.velocity.x < 0) {
         m.anims.play('spr-log-walkleft', true);
       } else if (m.body.velocity.x > 0) {

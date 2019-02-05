@@ -155,8 +155,8 @@
                  "type":"playerSpawn",
                  "visible":true,
                  "width":0,
-                 "x":466.5,
-                 "y":368.167
+                 "x":164.333333333333,
+                 "y":735.000333333333
                 }, 
                 {
                  "height":0,
@@ -439,6 +439,17 @@
                  "width":3.33333333333337,
                  "x":876.666666666667,
                  "y":192
+                }, 
+                {
+                 "height":72.5,
+                 "id":80,
+                 "name":"endDemo",
+                 "rotation":0,
+                 "type":"endDemo",
+                 "visible":true,
+                 "width":74.5,
+                 "x":882.5,
+                 "y":213
                 }],
          "opacity":1,
          "type":"objectgroup",
@@ -446,7 +457,7 @@
          "x":0,
          "y":0
         }],
- "nextobjectid":80,
+ "nextobjectid":81,
  "orientation":"orthogonal",
  "renderorder":"right-down",
  "tiledversion":"1.1.6",
@@ -4692,7 +4703,7 @@
                 },
              "647":
                 {
-                 "collide":false
+                 "collide":true
                 },
              "648":
                 {
@@ -4868,7 +4879,7 @@
                 },
              "687":
                 {
-                 "collide":false
+                 "collide":true
                 },
              "688":
                 {
@@ -5044,11 +5055,11 @@
                 },
              "726":
                 {
-                 "collide":false
+                 "collide":true
                 },
              "727":
                 {
-                 "collide":false
+                 "collide":true
                 },
              "728":
                 {
@@ -5208,15 +5219,15 @@
                 },
              "763":
                 {
-                 "collide":false
+                 "collide":true
                 },
              "764":
                 {
-                 "collide":false
+                 "collide":true
                 },
              "765":
                 {
-                 "collide":false
+                 "collide":true
                 },
              "766":
                 {

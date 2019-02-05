@@ -5,6 +5,7 @@ import Menu from './scenes/Menu';
 import Intro from './scenes/Intro';
 import Game from './scenes/Game';
 import GameOver from './scenes/GameOver';
+import DemoEnding from './scenes/DemoEnding';
 
 let width = 300;
 let height = 300;
@@ -30,7 +31,7 @@ const config = {
     default: 'arcade',
     arcade: {gravity: { y: 0 }}
   },
-  scene: [ Boot, Preload, Menu, Intro, Game, GameOver ],
+  scene: [ Boot, Preload, Menu, Intro, Game, GameOver, DemoEnding ],
   pixelArt: true,
   roundPixels: true,
   backgroundColor: '0x000000'

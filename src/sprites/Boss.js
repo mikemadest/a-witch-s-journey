@@ -188,7 +188,7 @@ export default class Boss extends Monster {
    * Refresh entity for each frame
    */
   update() {
-    if (!this.spr || !this.spr.body) {
+    if (this.life === 0 || !this.spr || !this.spr.body) {
       return;
     }
     this.transitionToState(this.state, this.nextState);

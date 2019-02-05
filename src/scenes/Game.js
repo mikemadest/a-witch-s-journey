@@ -612,7 +612,9 @@ class Game extends BaseScene {
    * Manage collision : creature taking dammage, etc.
    */
   handleCollisions() {
-    this.physics.add.collider(this.creatures['player'].spr, [
+    const playerSprite = this.creatures['player'].spr;
+
+    this.physics.add.collider(playerSprite, [
       this.layers['background'],
       this.layers['world'],
       this.layers['details'],
@@ -621,11 +623,23 @@ class Game extends BaseScene {
     ]);
 
     this.physics.add.collider(
-      this.creatures['player'].spr,
+      playerSprite,
       this.creatures['oldman'].spr,
       this.returnQuest,
       null,
       this
+    );
+
+    const endZone = this.map.filterObjects(
+      'objects',
+      obj => obj.name === 'endDemo'
+    );
+    this.physics.add.overlap(
+      playerSprite,
+      endZone,
+      (player, detectZone) => {
+        this.scene.start('DemoEnding');
+      }
     );
   }
 
